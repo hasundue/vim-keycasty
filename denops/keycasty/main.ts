@@ -1,7 +1,6 @@
 import type { Denops } from "https://deno.land/x/denops_std@v3.3.0/mod.ts";
 import * as vim from "https://deno.land/x/denops_std@v3.3.0/function/mod.ts";
 import * as nvim from "https://deno.land/x/denops_std@v3.3.0/function/nvim/mod.ts"
-import { replace } from "https://deno.land/x/denops_std@v3.3.0/buffer/mod.ts"
 import * as autocmd from "https://deno.land/x/denops_std@v3.3.0/autocmd/mod.ts";
 
 type State = {
@@ -67,7 +66,7 @@ export async function main(denops: Denops) {
           `call denops#notify("${denops.name}", "show", [])`
         );
         helper.define(
-          "CursorHold",
+          [ "CursorHold", "InsertEnter" ],
           "*",
           `call denops#notify("${denops.name}", "clear", [])`
         );
@@ -80,10 +79,11 @@ export async function main(denops: Denops) {
 
       if (!window) {
         window = await nvim.nvim_open_win(denops, buffer, false, {
+          focusable: false,
           style: "minimal",
           relative: "cursor",
           row: 1,
-          col: 1,
+          col: 0,
           height: 1,
           width: keys.length,
         }) as number;
@@ -92,12 +92,12 @@ export async function main(denops: Denops) {
         nvim.nvim_win_set_config(denops, window, {
           relative: "cursor",
           row: 1,
-          col: 1,
+          col: 0,
           width: keys.length,
         });
       }
 
-      replace(denops, buffer, [keys]);
+      nvim.nvim_buf_set_lines(denops, buffer, 0, -1, false, [keys]);
 
       state = newState;
     },
@@ -111,4 +111,6 @@ export async function main(denops: Denops) {
       }
     },
   };
+
+  await denops.cmd(`command! KeycastyEnable call denops#notify("${denops.name}", "enable", [])`);
 }

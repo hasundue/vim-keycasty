@@ -1,2 +1,2 @@
-# vim-keycast
-Keycast plugin for Vim/NeoVim
+# vim-keycasty
+An experimental keycast plugin for Vim/NeoVim.
