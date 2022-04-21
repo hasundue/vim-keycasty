@@ -1,52 +1,5 @@
-import type { Denops } from "https://deno.land/x/denops_std@v3.3.0/mod.ts";
-import * as vim from "https://deno.land/x/denops_std@v3.3.0/function/mod.ts";
-import * as nvim from "https://deno.land/x/denops_std@v3.3.0/function/nvim/mod.ts"
-import * as autocmd from "https://deno.land/x/denops_std@v3.3.0/autocmd/mod.ts";
-
-type State = {
-  row: number;
-  col: number;
-  char: string;
-}
-
-async function getState(denops: Denops): Promise<State> {
-  const position: vim.Position = await vim.getcurpos(denops);
-  const line = await vim.getline(denops, ".");
-  const col = await vim.col(denops, ".");
-
-  return {
-    row: position[1],
-    col: position[2],
-    char: line[col-1],
-  };
-}
-
-function getKeys(current: State, previous: State): string {
-  let keys = "";
-
-  if (current.row === previous.row) {
-    const diff = current.col - previous.col;
-    const diffAbs = Math.abs(diff);
-
-    if (diffAbs > 1) {
-      keys += diffAbs.toString();
-    }
-
-    keys += diff > 0 ? "l" : "h";
-  }
-  else {
-    const diff = current.row - previous.row;
-    const diffAbs = Math.abs(diff);
-
-    if (diffAbs > 1) {
-      keys += diffAbs.toString();
-    }
-
-    keys += diff > 0 ? "j" : "k";
-  }
-
-  return keys;
-}
+import { Denops, nvim, autocmd } from "./deps.ts";
+import { getState, getKeys } from "./funcs.ts";
 
 export async function main(denops: Denops) {
   let buffer = 0;
