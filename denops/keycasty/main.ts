@@ -7,10 +7,10 @@ export async function main(denops: Denops) {
   let state = await getState(denops);
   let keys = "";
 
-  // const keycasty = denops.meta.host === "nvim"
-  //   ? await import("./nvim.ts")
-  //   : await import("./vim.ts");
-  const keycasty = await import("./nvim.ts");
+  const keycasty = denops.meta.host === "nvim"
+    ? await import("./nvim.ts")
+    : await import("./vim.ts");
+  // const keycasty = await import("./nvim.ts");
 
   denops.dispatcher = {
     async enable() {
@@ -38,11 +38,10 @@ export async function main(denops: Denops) {
       keycasty.updatePopupBuffer(denops, buffer, keys);
 
       if (!window) {
-        window = await keycasty.openPopupWindow(denops, buffer, keys);
+        window = await keycasty.openPopupWindow(denops, buffer);
       }
-      else {
-        keycasty.reshapePopupWindow(denops, keys.length);
-      }
+
+      keycasty.updatePopupWindow(denops, window);
 
       state = newState;
     },

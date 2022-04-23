@@ -5,7 +5,7 @@ export function createPopupBuffer(denops: Denops) {
   return func.nvim_create_buf(denops, false, true) as Promise<number>;
 }
 
-export function openPopupWindow(denops: Denops, buffer: number, keys?: string) {
+export function openPopupWindow(denops: Denops, buffer: number) {
   return func.nvim_open_win(denops, buffer, false, {
     focusable: false,
     style: "minimal",
@@ -13,12 +13,11 @@ export function openPopupWindow(denops: Denops, buffer: number, keys?: string) {
     row: 1,
     col: 0,
     height: 1,
-    width: keys ? keys.length : 1,
+    width: 1,
   }) as Promise<number>;
 }
 
-export function reshapePopupWindow(denops: Denops, width: number) {
-  return func.nvim_win_set_config(denops, window, { width });
+export function updatePopupWindow(_denops: Denops, _window: number) {
 }
 
 export function updatePopupBuffer(denops: Denops, buffer: number, keys: string) {
