@@ -1,6 +1,6 @@
-import { Denops } from "./deps.ts";
+import type { Denops } from "./deps.ts";
+import type { State } from "./types.ts";
 import { vim } from "./deps.ts";
-import { State } from "./types.ts";
 
 export async function getState(denops: Denops): Promise<State> {
   const position: vim.Position = await vim.getcurpos(denops);

@@ -1,4 +1,4 @@
-import { Denops, nvim, autocmd } from "./deps.ts";
+import { Denops, autocmd } from "./deps.ts";
 import { getState, getKeys } from "./funcs.ts";
 
 export async function main(denops: Denops) {
@@ -7,9 +7,14 @@ export async function main(denops: Denops) {
   let state = await getState(denops);
   let keys = "";
 
+  // const keycasty = denops.meta.host === "nvim"
+  //   ? await import("./nvim.ts")
+  //   : await import("./vim.ts");
+  const keycasty = await import("./nvim.ts");
+
   denops.dispatcher = {
     async enable() {
-      buffer = await nvim.nvim_create_buf(denops, false, true) as number;
+      buffer = await keycasty.createPopupBuffer(denops);
 
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
@@ -30,35 +35,22 @@ export async function main(denops: Denops) {
       const newState = await getState(denops);
       keys += getKeys(newState, state);
 
+      keycasty.updatePopupBuffer(denops, buffer, keys);
+
       if (!window) {
-        window = await nvim.nvim_open_win(denops, buffer, false, {
-          focusable: false,
-          style: "minimal",
-          relative: "cursor",
-          row: 1,
-          col: 0,
-          height: 1,
-          width: keys.length,
-        }) as number;
+        window = await keycasty.openPopupWindow(denops, buffer, keys);
       }
       else {
-        nvim.nvim_win_set_config(denops, window, {
-          relative: "cursor",
-          row: 1,
-          col: 0,
-          width: keys.length,
-        });
+        keycasty.reshapePopupWindow(denops, keys.length);
       }
-
-      nvim.nvim_buf_set_lines(denops, buffer, 0, -1, false, [keys]);
 
       state = newState;
     },
 
     async clear() {
       if (window) {
-        await nvim.nvim_win_close(denops, window, false);
-        await denops.cmd(`silent call nvim_buf_set_lines(${buffer}, 0, -1, v:false, [])`);
+        keycasty.closePopupWindow(denops, window);
+        await keycasty.clearPopupBuffer(denops, buffer);
         window = 0;
         keys = "";
       }
