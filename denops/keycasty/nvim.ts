@@ -18,12 +18,7 @@ export function openPopupWindow(denops: Denops, buffer: number, keys?: string) {
 }
 
 export function reshapePopupWindow(denops: Denops, width: number) {
-  return func.nvim_win_set_config(denops, window, {
-    relative: "cursor",
-    row: 1,
-    col: 0,
-    width
-  });
+  return func.nvim_win_set_config(denops, window, { width });
 }
 
 export function updatePopupBuffer(denops: Denops, buffer: number, keys: string) {
