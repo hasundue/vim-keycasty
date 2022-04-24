@@ -35,7 +35,8 @@ export async function main(denops: Denops) {
       const newKeys = getKeysCursorMoved(newState, state);
       keys = keys.concat(newKeys);
 
-      keycasty.updatePopupBuffer(denops, bufnr, keys);
+      const text = keys.join("");
+      keycasty.updatePopupBuffer(denops, bufnr, text);
 
       if (!winnr) {
         winnr = await keycasty.openPopupWindow(denops, bufnr);

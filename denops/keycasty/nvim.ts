@@ -28,8 +28,7 @@ export async function updatePopupWindow(denops: Denops, winnr: number) {
   });
 }
 
-export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string[]) {
-  const text = keys.join(" ");
+export function updatePopupBuffer(denops: Denops, bufnr: number, text: string) {
   return func.nvim_buf_set_lines(denops, bufnr, 0, -1, false, [text]);
 }
 
