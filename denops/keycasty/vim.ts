@@ -14,23 +14,23 @@ export async function createPopupBuffer(denops: Denops) {
 }
 
 export async function openPopupWindow(denops: Denops, bufnr: number) {
-  const window = await vim.bufwinnr(denops, bufnr);
+  const winnr = await vim.bufwinnr(denops, bufnr);
 
-  if (window < 0) {
+  if (winnr < 0) {
     return denops.call("popup_create", bufnr, {
       "line": "cursor+1",
       "col": "cursor" 
     }) as Promise<number>;
   }
   else {
-    denops.call("popup_show", window);
-    updatePopupWindow(denops, window);
-    return window;
+    denops.call("popup_show", winnr);
+    updatePopupWindow(denops, winnr);
+    return winnr;
   }
 }
 
-export function updatePopupWindow(denops: Denops, window: number) {
-  denops.call("popup_move", window, { "line": "cursor+1", "col": "cursor" });
+export function updatePopupWindow(denops: Denops, winnr: number) {
+  denops.call("popup_move", winnr, { "line": "cursor+1", "col": "cursor" });
   return denops.cmd("redraw");
 }
 
@@ -38,8 +38,8 @@ export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string) {
   return vim.setbufline(denops, bufnr, 1, keys);
 }
 
-export function closePopupWindow(denops: Denops, window: number) {
-  denops.call("popup_hide", window);
+export function closePopupWindow(denops: Denops, winnr: number) {
+  denops.call("popup_hide", winnr);
   return denops.cmd("redraw");
 }
 

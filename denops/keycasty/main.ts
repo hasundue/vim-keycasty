@@ -2,8 +2,8 @@ import { Denops, autocmd } from "./deps.ts";
 import { getState, getKeys } from "./funcs.ts";
 
 export async function main(denops: Denops) {
-  let buffer = 0;
-  let window = 0;
+  let bufnr = 0;
+  let winnr = 0;
   let state = await getState(denops);
   let keys = "";
 
@@ -14,7 +14,7 @@ export async function main(denops: Denops) {
 
   denops.dispatcher = {
     async enable() {
-      buffer = await keycasty.createPopupBuffer(denops);
+      bufnr = await keycasty.createPopupBuffer(denops);
 
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
@@ -35,22 +35,22 @@ export async function main(denops: Denops) {
       const newState = await getState(denops);
       keys += getKeys(newState, state);
 
-      keycasty.updatePopupBuffer(denops, buffer, keys);
+      keycasty.updatePopupBuffer(denops, bufnr, keys);
 
-      if (!window) {
-        window = await keycasty.openPopupWindow(denops, buffer);
+      if (!winnr) {
+        winnr = await keycasty.openPopupWindow(denops, bufnr);
       }
 
-      keycasty.updatePopupWindow(denops, window);
+      keycasty.updatePopupWindow(denops, winnr);
 
       state = newState;
     },
 
     async clear() {
-      if (window) {
-        keycasty.closePopupWindow(denops, window);
-        await keycasty.clearPopupBuffer(denops, buffer);
-        window = 0;
+      if (winnr) {
+        keycasty.closePopupWindow(denops, winnr);
+        await keycasty.clearPopupBuffer(denops, bufnr);
+        winnr = 0;
         keys = "";
       }
     },
