@@ -32,7 +32,7 @@ export async function main(denops: Denops) {
 
     async handleCursorMoved() {
       const newState = await getState(denops);
-      const newKeys = getKeysCursorMoved(denops, newState, state);
+      const newKeys = getKeysCursorMoved(newState, state);
       keys = keys.concat(newKeys);
 
       keycasty.updatePopupBuffer(denops, bufnr, keys);
