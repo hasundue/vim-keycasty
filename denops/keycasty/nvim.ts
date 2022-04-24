@@ -20,8 +20,9 @@ export function openPopupWindow(denops: Denops, bufnr: number) {
 export function updatePopupWindow(_denops: Denops, _winnr: number) {
 }
 
-export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string) {
-  return func.nvim_buf_set_lines(denops, bufnr, 0, -1, false, [keys]);
+export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string[]) {
+  const text = keys.join(" ");
+  return func.nvim_buf_set_lines(denops, bufnr, 0, -1, false, [text]);
 }
 
 export function closePopupWindow(denops: Denops, winnr: number) {

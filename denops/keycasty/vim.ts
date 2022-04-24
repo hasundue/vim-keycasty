@@ -34,8 +34,9 @@ export function updatePopupWindow(denops: Denops, winnr: number) {
   return denops.cmd("redraw");
 }
 
-export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string) {
-  return vim.setbufline(denops, bufnr, 1, keys);
+export function updatePopupBuffer(denops: Denops, bufnr: number, keys: string[]) {
+  const text = keys.join(" ");
+  return vim.setbufline(denops, bufnr, 1, text);
 }
 
 export function closePopupWindow(denops: Denops, winnr: number) {

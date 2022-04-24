@@ -5,7 +5,7 @@ export async function main(denops: Denops) {
   let bufnr = 0;
   let winnr = 0;
   let state = await getState(denops);
-  let keys = "";
+  let keys: string[] = [];
 
   const keycasty = denops.meta.host === "nvim"
     ? await import("./nvim.ts")
@@ -20,7 +20,7 @@ export async function main(denops: Denops) {
         helper.define(
           "CursorMoved",
           "*",
-          `call denops#notify("${denops.name}", "show", [])`
+          `call denops#notify("${denops.name}", "handleCursorMoved", [])`
         );
         helper.define(
           [ "CursorHold", "InsertEnter" ],
@@ -30,9 +30,10 @@ export async function main(denops: Denops) {
       });
     },
 
-    async show() {
+    async handleCursorMoved() {
       const newState = await getState(denops);
-      keys += getKeys(newState, state);
+      const newKeys = getKeys(newState, state);
+      keys = keys.concat(newKeys);
 
       keycasty.updatePopupBuffer(denops, bufnr, keys);
 
@@ -50,7 +51,7 @@ export async function main(denops: Denops) {
         keycasty.closePopupWindow(denops, winnr);
         await keycasty.clearPopupBuffer(denops, bufnr);
         winnr = 0;
-        keys = "";
+        keys = [];
       }
     },
   };
