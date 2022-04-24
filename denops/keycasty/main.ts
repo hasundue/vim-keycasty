@@ -1,5 +1,5 @@
 import { Denops, autocmd } from "./deps.ts";
-import { getState, getKeys } from "./funcs.ts";
+import { getState, getKeysCursorMoved } from "./funcs.ts";
 
 export async function main(denops: Denops) {
   let bufnr = 0;
@@ -32,7 +32,7 @@ export async function main(denops: Denops) {
 
     async handleCursorMoved() {
       const newState = await getState(denops);
-      const newKeys = getKeys(newState, state);
+      const newKeys = getKeysCursorMoved(denops, newState, state);
       keys = keys.concat(newKeys);
 
       keycasty.updatePopupBuffer(denops, bufnr, keys);

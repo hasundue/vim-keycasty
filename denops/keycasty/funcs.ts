@@ -14,30 +14,22 @@ export async function getState(denops: Denops): Promise<State> {
   };
 }
 
-export function getKeys(current: State, previous: State): string {
-  let keys = "";
+export function getKeysCursorMoved(current: State, previous: State): string {
+  const candidates: string[] = [];
 
-  if (current.row === previous.row) {
-    const diff = current.col - previous.col;
-    const diffAbs = Math.abs(diff);
+  const verticalMove = current.row - previous.row;
+  const horizontalMove = current.col - previous.col;
 
-    if (diffAbs > 1) {
-      keys += diffAbs.toString();
-    }
+  // h j k l
+  const simpleMoveKey = verticalMove
+    ? ( verticalMove > 0 ? "j" : "k" )
+    : ( horizontalMove > 0 ? "l" : "h" );
 
-    keys += diff > 0 ? "l" : "h";
-  }
-  else {
-    const diff = current.row - previous.row;
-    const diffAbs = Math.abs(diff);
+  const simpleMoveAmount = Math.abs(verticalMove) || Math.abs(horizontalMove);
+  const simpleMoveAmountChar = simpleMoveAmount > 1 ? simpleMoveAmount.toString() : "";
 
-    if (diffAbs > 1) {
-      keys += diffAbs.toString();
-    }
+  candidates.push(simpleMoveAmountChar + simpleMoveKey);
 
-    keys += diff > 0 ? "j" : "k";
-  }
-
-  return keys;
+  return candidates[0];
 }
 
