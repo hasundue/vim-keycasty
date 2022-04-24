@@ -10,7 +10,6 @@ export async function main(denops: Denops) {
   const keycasty = denops.meta.host === "nvim"
     ? await import("./nvim.ts")
     : await import("./vim.ts");
-  // const keycasty = await import("./nvim.ts");
 
   denops.dispatcher = {
     async enable() {
