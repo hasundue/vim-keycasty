@@ -44,7 +44,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
   // gj gk
   const visualVerticalMove = Math.floor(
-    (horizontalMove + previous.col) / windowWidth
+    (horizontalMove + previous.col % windowWidth) / windowWidth
   );
   const visualVerticalMoveKey = visualVerticalMove > 0 ? "gj" : "gk";
   const visualVerticalMoveAmount = Math.abs(visualVerticalMove);
