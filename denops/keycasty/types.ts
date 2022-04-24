@@ -4,4 +4,6 @@ export type State = {
   char: string;
   width: number;
   height: number;
+  topline: number;
+  botline: number;
 };

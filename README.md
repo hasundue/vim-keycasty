@@ -23,3 +23,7 @@ Plug 'hasundue/vim-keycasty'
 ### Cursor Movement
 - h j k l
 - gj gk
+- H M L
+
+### Editing
+Not supported yet.
