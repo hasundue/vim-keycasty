@@ -27,6 +27,31 @@ export function getWordPosition(line: string): { wordStart: number[], wordEnd: n
   return { wordStart, wordEnd };
 }
 
+export function getChunkPosition(line: string): { chunkStart: number[], chunkEnd: number[] } {
+  const chunkStart: number[] = [];
+  const chunkEnd: number[] = [];
+
+  let index = 0;
+
+  while (true) {
+    if (index === line.length) break;
+
+    const start = line.slice(index).search(/(?<=\s|^)\S/);
+
+    if (start > -1) {
+      index += start;
+      chunkStart.push(index);
+    }
+
+    index += line.slice(index).search(/\S(?=\s|$)/);
+    chunkEnd.push(index);
+
+    index += 1;
+  }
+
+  return { chunkStart, chunkEnd };
+}
+
 export async function getState(denops: Denops): Promise<State> {
   const position: vim.Position = await vim.getcurpos(denops);
 
@@ -43,6 +68,7 @@ export async function getState(denops: Denops): Promise<State> {
   const botline = wininfo[0].botline as number;
 
   const { wordStart, wordEnd } = getWordPosition(line);
+  const { chunkStart, chunkEnd } = getChunkPosition(line);
 
   return {
     row: position[1],
@@ -54,6 +80,8 @@ export async function getState(denops: Denops): Promise<State> {
     botline,
     wordStart,
     wordEnd,
+    chunkStart,
+    chunkEnd,
   };
 }
 
@@ -113,6 +141,28 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     if (matchedEnd > -1) {
       const nextEnd = previous.wordEnd.findIndex(col => col > previous.col - 1);
       const jumpKey = matchedEnd >= nextEnd ? "e" : "ge";
+      const jumpAmount = matchedEnd >= nextEnd
+        ? matchedEnd - nextEnd + 1
+        : nextEnd - matchedEnd - 1;
+      candidates.push(amountChar(jumpAmount) + jumpKey);
+    }
+  }
+
+  // W E B gE
+  if (!verticalMove) {
+    const matchedStart = current.chunkStart.indexOf(current.col - 1);
+    const matchedEnd = current.chunkEnd.indexOf(current.col - 1);
+    if (matchedStart > -1) {
+      const nextStart = previous.chunkStart.findIndex(col => col > previous.col - 1);
+      const jumpKey = matchedStart >= nextStart ? "W" : "B";
+      const jumpAmount = matchedStart >= nextStart
+        ? matchedStart - nextStart + 1
+        : nextStart - matchedStart - 1;
+      candidates.push(amountChar(jumpAmount) + jumpKey);
+    }
+    if (matchedEnd > -1) {
+      const nextEnd = previous.chunkEnd.findIndex(col => col > previous.col - 1);
+      const jumpKey = matchedEnd >= nextEnd ? "E" : "gE";
       const jumpAmount = matchedEnd >= nextEnd
         ? matchedEnd - nextEnd + 1
         : nextEnd - matchedEnd - 1;

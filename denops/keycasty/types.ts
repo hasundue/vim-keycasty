@@ -8,4 +8,6 @@ export type State = {
   botline: number;
   wordStart: number[];
   wordEnd: number[];
+  chunkStart: number[];
+  chunkEnd: number[];
 };
