@@ -15,8 +15,8 @@ export type Position = {
 export type WindowState = {
   width: number;
   height: number;
-  topline: number; // zero-based
-  botline: number; // zero-based
+  top: number; // zero-based
+  bottom: number; // zero-based
 }
 
 // 0-indexed
