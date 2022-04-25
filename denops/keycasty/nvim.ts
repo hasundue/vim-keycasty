@@ -39,3 +39,7 @@ export function closePopupWindow(denops: Denops, winnr: number) {
 export function clearPopupBuffer(denops: Denops, bufnr: number) {
   return denops.cmd(`silent call nvim_buf_set_lines(${bufnr}, 0, -1, v:false, [])`);
 }
+
+export function deletePopupWindow(denops: Denops, winnr: number) {
+  return func.nvim_win_close(denops, winnr, false);
+}

@@ -18,7 +18,11 @@ Plug 'vim-denops/denops.vim'
 Plug 'hasundue/vim-keycasty'
 ```
 
-## Supported Commands
+## Commands
+- :KeycastyEnable
+- :KeycastyDisable
+
+## Supported Vim Commands
 
 ### Cursor Movement
 - h j k l

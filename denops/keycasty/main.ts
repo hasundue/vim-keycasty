@@ -13,8 +13,9 @@ export async function main(denops: Denops) {
 
   denops.dispatcher = {
     async enable() {
-      bufnr = await keycasty.createPopupBuffer(denops);
-
+      if (!bufnr) {
+        bufnr = await keycasty.createPopupBuffer(denops);
+      }
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
         helper.define(
@@ -27,6 +28,18 @@ export async function main(denops: Denops) {
           "*",
           `call denops#notify("${denops.name}", "clear", [])`
         );
+      });
+    },
+
+    async disable() {
+      if (bufnr) {
+        await denops.cmd(`bw ${bufnr}`);
+      }
+      if (winnr) {
+        await keycasty.deletePopupWindow(denops, winnr);
+      }
+      await autocmd.group(denops, "keycasty", (helper) => {
+        helper.remove();
       });
     },
 
@@ -58,4 +71,5 @@ export async function main(denops: Denops) {
   };
 
   await denops.cmd(`command! KeycastyEnable call denops#notify("${denops.name}", "enable", [])`);
+  await denops.cmd(`command! KeycastyDisable call denops#notify("${denops.name}", "disable", [])`);
 }

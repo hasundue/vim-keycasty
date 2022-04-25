@@ -46,3 +46,9 @@ export function closePopupWindow(denops: Denops, winnr: number) {
 export function clearPopupBuffer(denops: Denops, bufnr: number) {
   return denops.cmd(`silent call setbufline(${bufnr}, 1, "")`);
 }
+
+export function deletePopupWindow(denops: Denops, winnr: number) {
+  denops.call("popup_close", winnr);
+  return denops.cmd("redraw");
+}
+
