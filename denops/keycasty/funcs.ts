@@ -114,46 +114,36 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     candidates.push("L");
   }
 
-  // w e b ge
-  if (!verticalMove) {
-    const matchedStart = current.wordStart.indexOf(current.col - 1);
-    const matchedEnd = current.wordEnd.indexOf(current.col - 1);
-    if (matchedStart > -1) {
-      const nextStart = previous.wordStart.findIndex(col => col > previous.col - 1);
-      const jumpKey = matchedStart >= nextStart ? "w" : "b";
-      const jumpAmount = matchedStart >= nextStart
-        ? matchedStart - nextStart + 1
-        : nextStart - matchedStart - 1;
-      candidates.push(amountChar(jumpAmount) + jumpKey);
-    }
-    if (matchedEnd > -1) {
-      const nextEnd = previous.wordEnd.findIndex(col => col > previous.col - 1);
-      const jumpKey = matchedEnd >= nextEnd ? "e" : "ge";
-      const jumpAmount = matchedEnd >= nextEnd
-        ? matchedEnd - nextEnd + 1
-        : nextEnd - matchedEnd - 1;
-      candidates.push(amountChar(jumpAmount) + jumpKey);
-    }
-  }
+  // w W e E b B ge gE
+  const positionss = [ current.wordStart, current.wordEnd, current.chunkStart, current.chunkEnd ];
 
-  // W E B gE
-  if (!verticalMove) {
-    const matchedStart = current.chunkStart.indexOf(current.col - 1);
-    const matchedEnd = current.chunkEnd.indexOf(current.col - 1);
-    if (matchedStart > -1) {
-      const nextStart = previous.chunkStart.findIndex(col => col > previous.col - 1);
-      const jumpKey = matchedStart >= nextStart ? "W" : "B";
-      const jumpAmount = matchedStart >= nextStart
-        ? matchedStart - nextStart + 1
-        : nextStart - matchedStart - 1;
-      candidates.push(amountChar(jumpAmount) + jumpKey);
-    }
-    if (matchedEnd > -1) {
-      const nextEnd = previous.chunkEnd.findIndex(col => col > previous.col - 1);
-      const jumpKey = matchedEnd >= nextEnd ? "E" : "gE";
-      const jumpAmount = matchedEnd >= nextEnd
-        ? matchedEnd - nextEnd + 1
-        : nextEnd - matchedEnd - 1;
+  for (const positions of positionss) {
+    const match = positions.indexOf(current.col - 1);
+
+    if (match > -1) {
+      const next = positions.findIndex(col => col > previous.col - 1);
+
+      const jumpKey = ((positions: typeof positionss[number]) => { 
+        if (match >= next) { // move forward
+          switch (positions) {
+            case current.wordStart: return "w";
+            case current.chunkStart: return "W";
+            case current.wordEnd: return "e";
+            case current.chunkEnd: return "E";
+          }
+        }
+        else { // move backward
+          switch (positions) {
+            case current.wordStart: return "b";
+            case current.chunkStart: return "B";
+            case current.wordEnd: return "ge";
+            case current.chunkEnd: return "gE";
+          }
+        }
+      })(positions);
+
+      const jumpAmount = match >= next ? match - next + 1 : next - match - 1;
+
       candidates.push(amountChar(jumpAmount) + jumpKey);
     }
   }
