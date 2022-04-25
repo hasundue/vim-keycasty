@@ -34,9 +34,11 @@ export async function main(denops: Denops) {
     async disable() {
       if (bufnr) {
         await denops.cmd(`bw ${bufnr}`);
+        bufnr = 0;
       }
       if (winnr) {
         await keycasty.deletePopupWindow(denops, winnr);
+        winnr = 0;
       }
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
