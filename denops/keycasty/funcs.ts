@@ -41,7 +41,6 @@ export async function getState(denops: Denops): Promise<State> {
   const botline = wininfo[0].botline as number;
 
   const { wordStart, wordEnd } = getWordPosition(line);
-  console.log(wordStart);
 
   return {
     row: position[1],
