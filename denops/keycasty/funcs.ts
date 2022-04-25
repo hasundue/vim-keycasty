@@ -2,54 +2,42 @@ import type { Denops } from "./deps.ts";
 import type { State } from "./types.ts";
 import { vim } from "./deps.ts";
 
-export function getWordPosition(line: string): { wordStart: number[], wordEnd: number[] } {
-  const wordStart: number[] = [];
-  const wordEnd: number[] = [];
+function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegExp)
+: { starts: number[], ends: number[] } {
+  const starts: number[] = [];
+  const ends: number[] = [];
 
   let index = 0;
 
   while (true) {
     if (index === line.length) break;
 
-    const start = line.slice(index).search(/\b\w|((?<=[\w\s])[^\w\s\.,]|^[^\w\s\.,])./);
+    const start = line.slice(index).search(startPattern);
 
     if (start > -1) {
       index += start;
-      wordStart.push(index);
+      starts.push(index);
     }
 
-    index += line.slice(index).search(/\w\b|[^\w\s][\w\s]|[^\w\s]$/);
-    wordEnd.push(index);
+    index += line.slice(index).search(endPattern);
+    ends.push(index);
 
     index += 1;
   }
 
-  return { wordStart, wordEnd };
+  return { starts, ends };
 }
 
-export function getChunkPosition(line: string): { chunkStart: number[], chunkEnd: number[] } {
-  const chunkStart: number[] = [];
-  const chunkEnd: number[] = [];
+export function getWordPositions(line: string): { starts: number[], ends: number[] } {
+  return getObjectPositions(
+    line,
+    /\b\w|((?<=[\w\s])[^\w\s\.,]|^[^\w\s\.,])./,
+    /\w\b|[^\w\s][\w\s]|[^\w\s]$/
+  );
+}
 
-  let index = 0;
-
-  while (true) {
-    if (index === line.length) break;
-
-    const start = line.slice(index).search(/(?<=\s|^)\S/);
-
-    if (start > -1) {
-      index += start;
-      chunkStart.push(index);
-    }
-
-    index += line.slice(index).search(/\S(?=\s|$)/);
-    chunkEnd.push(index);
-
-    index += 1;
-  }
-
-  return { chunkStart, chunkEnd };
+export function getChunkPositions(line: string): { starts: number[], ends: number[] } {
+  return getObjectPositions(line, /(?<=\s|^)\S/, /\S(?=\s|$)/);
 }
 
 export async function getState(denops: Denops): Promise<State> {
@@ -67,8 +55,8 @@ export async function getState(denops: Denops): Promise<State> {
   const topline = wininfo[0].topline as number;
   const botline = wininfo[0].botline as number;
 
-  const { wordStart, wordEnd } = getWordPosition(line);
-  const { chunkStart, chunkEnd } = getChunkPosition(line);
+  const wordPositions = getWordPositions(line);
+  const chunkPositions = getChunkPositions(line);
 
   return {
     row: position[1],
@@ -78,10 +66,10 @@ export async function getState(denops: Denops): Promise<State> {
     height,
     topline,
     botline,
-    wordStart,
-    wordEnd,
-    chunkStart,
-    chunkEnd,
+    wordStart: wordPositions.starts,
+    wordEnd: wordPositions.ends,
+    chunkStart: chunkPositions.starts,
+    chunkEnd: chunkPositions.ends,
   };
 }
 
