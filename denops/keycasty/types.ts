@@ -6,4 +6,6 @@ export type State = {
   height: number;
   topline: number;
   botline: number;
+  wordStart: number[];
+  wordEnd: number[];
 };

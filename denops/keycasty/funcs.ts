@@ -2,6 +2,29 @@ import type { Denops } from "./deps.ts";
 import type { State } from "./types.ts";
 import { vim } from "./deps.ts";
 
+export function getWordPosition(line: string): { wordStart: number[], wordEnd: number[] } {
+  const wordStart: number[] = [];
+  const wordEnd: number[] = [];
+
+  let index = 0;
+
+  while (true) {
+    const start = line.slice(index).search(/(\b\w)/);
+
+    if (start < 0) break;
+
+    index += start;
+    wordStart.push(index);
+
+    index += line.slice(index).search(/\w\b/);
+    wordEnd.push(index);
+
+    index += 1;
+  }
+
+  return { wordStart, wordEnd };
+}
+
 export async function getState(denops: Denops): Promise<State> {
   const position: vim.Position = await vim.getcurpos(denops);
 
@@ -17,6 +40,9 @@ export async function getState(denops: Denops): Promise<State> {
   const topline = wininfo[0].topline as number;
   const botline = wininfo[0].botline as number;
 
+  const { wordStart, wordEnd } = getWordPosition(line);
+  console.log(wordStart);
+
   return {
     row: position[1],
     col: position[2],
@@ -25,6 +51,8 @@ export async function getState(denops: Denops): Promise<State> {
     height,
     topline,
     botline,
+    wordStart,
+    wordEnd,
   };
 }
 
@@ -69,6 +97,8 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   if (current.row === previous.botline) {
     candidates.push("L");
   }
+
+  // w e g ge
 
   return candidates.reduce((now, next) => next.length < now.length ? next : now);
 }
