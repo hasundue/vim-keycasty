@@ -1,9 +1,8 @@
 import type { Denops } from "./deps.ts";
-import type { State } from "./types.ts";
+import type { State, WindowState, PositionArrays } from "./types.ts";
 import { vim } from "./deps.ts";
 
-function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegExp)
-: { starts: number[], ends: number[] } {
+function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegExp): PositionArrays {
   const starts: number[] = [];
   const ends: number[] = [];
 
@@ -28,7 +27,7 @@ function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegE
   return { starts, ends };
 }
 
-export function getWordPositions(line: string): { starts: number[], ends: number[] } {
+export function getWordPositions(line: string): PositionArrays {
   return getObjectPositions(
     line,
     /\b\w|((?<=[\w\s])[^\w\s\.,]|^[^\w\s\.,])./,
@@ -36,7 +35,7 @@ export function getWordPositions(line: string): { starts: number[], ends: number
   );
 }
 
-export function getChunkPositions(line: string): { starts: number[], ends: number[] } {
+export function getChunkPositions(line: string): PositionArrays {
   return getObjectPositions(line, /(?<=\s|^)\S/, /\S(?=\s|$)/);
 }
 
@@ -45,38 +44,34 @@ async function getMatchPairs(denops: Denops): Promise<string[]> {
   return str.split(","); // something like ["(:)", "{:}", "[:]"]
 }
 
-export async function getState(denops: Denops): Promise<State> {
-  const position: vim.Position = await vim.getcurpos(denops);
-
-  const line = await vim.getline(denops, ".");
-  const col = await vim.col(denops, ".");
-
+export async function getWindowState(denops: Denops): Promise<WindowState> {
   const width = await vim.winwidth(denops, 0) as number;
-  const height = await vim.winheight(denops, 0) as number;
-
   const winid = await vim.win_getid(denops);
   const wininfo = await vim.getwininfo(denops, winid) as Record<string, unknown>[];
   const textoff = wininfo[0].textoff as number;
   const topline = wininfo[0].topline as number;
   const botline = wininfo[0].botline as number;
 
-  const wordPositions = getWordPositions(line);
-  const chunkPositions = getChunkPositions(line);
-  const matchPairs = await getMatchPairs(denops);
+  return {
+    width: width - textoff,
+    height: await vim.winheight(denops, 0) as number,
+    top: topline - 1,
+    bottom: botline - 1,
+  }
+}
+
+export async function getState(denops: Denops): Promise<State> {
+  const position: vim.Position = await vim.getcurpos(denops);
+  const [ row, col ] = [ position[1] - 1, position[2] - 1 ];
+  const line = await vim.getline(denops, ".");
 
   return {
-    row: position[1],
-    col: position[2],
-    char: line[col-1],
-    width: width - textoff,
-    height,
-    topline,
-    botline,
-    wordStart: wordPositions.starts,
-    wordEnd: wordPositions.ends,
-    chunkStart: chunkPositions.starts,
-    chunkEnd: chunkPositions.ends,
-    matchPairs,
+    cursor: { row, col },
+    char: line[col],
+    window: await getWindowState(denops),
+    words: getWordPositions(line),
+    chunks: getChunkPositions(line),
+    matchPairs: await getMatchPairs(denops),
   };
 }
 
@@ -85,10 +80,9 @@ const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
 export function getKeysCursorMoved(current: State, previous: State): string {
   const candidates: string[] = [];
 
-  const verticalMove = current.row - previous.row;
-  const horizontalMove = current.col - previous.col;
-  const windowWidth = current.width;
-  const windowHeight = current.height;
+  const verticalMove = current.cursor.row - previous.cursor.row;
+  const horizontalMove = current.cursor.col - previous.cursor.col;
+  const windowWidth = current.window.width;
 
   // h j k l
   const simpleMoveKey = verticalMove
@@ -101,7 +95,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
   // gj gk
   const visualVerticalMove = Math.floor(
-    (horizontalMove + previous.col % windowWidth) / windowWidth
+    (horizontalMove + previous.cursor.col % windowWidth) / windowWidth
   );
   const visualVerticalMoveKey = visualVerticalMove > 0 ? "gj" : "gk";
   const visualVerticalMoveAmount = Math.abs(visualVerticalMove);
@@ -111,41 +105,45 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // H M L
-  if (current.row === previous.topline) {
-    candidates.push("H");
-  }
-  if (current.row === previous.botline - Math.floor(windowHeight/2)) {
-    candidates.push("M");
-  }
-  if (current.row === previous.botline) {
-    candidates.push("L");
+  if (verticalMove) {
+    const textHeight = current.window.bottom - current.window.top + 1;
+
+    if (current.cursor.row === current.window.top) {
+      candidates.push("H");
+    }
+    if (current.cursor.row === current.window.bottom - Math.floor(textHeight/2)) {
+      candidates.push("M");
+    }
+    if (current.cursor.row === current.window.bottom) {
+      candidates.push("L");
+    }
   }
 
   // w W e E b B ge gE
   if (!verticalMove) {
-    const positionss = [ current.wordStart, current.wordEnd, current.chunkStart, current.chunkEnd ];
+    const positionss = [ current.words.starts, current.words.ends, current.chunks.starts, current.chunks.ends ];
 
     for (const positions of positionss) {
-      const match = positions.indexOf(current.col - 1);
+      const match = positions.indexOf(current.cursor.col);
 
       if (match > -1) {
-        const next = positions.findIndex(col => col > previous.col - 1);
+        const next = positions.findIndex(col => col > previous.cursor.col);
 
         const jumpKey = ((positions: typeof positionss[number]) => { 
           if (match >= next) { // move forward
             switch (positions) {
-              case current.wordStart: return "w";
-              case current.chunkStart: return "W";
-              case current.wordEnd: return "e";
-              case current.chunkEnd: return "E";
+              case current.words.starts: return "w";
+              case current.chunks.starts: return "W";
+              case current.words.ends: return "e";
+              case current.chunks.ends: return "E";
             }
           }
           else { // move backward
             switch (positions) {
-              case current.wordStart: return "b";
-              case current.chunkStart: return "B";
-              case current.wordEnd: return "ge";
-              case current.chunkEnd: return "gE";
+              case current.words.starts: return "b";
+              case current.chunks.starts: return "B";
+              case current.words.ends: return "ge";
+              case current.chunks.ends: return "gE";
             }
           }
         })(positions);

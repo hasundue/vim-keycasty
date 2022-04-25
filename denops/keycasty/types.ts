@@ -1,15 +1,26 @@
 export type State = {
-  row: number;
-  col: number;
+  cursor: Position;
   char: string;
-  width: number;
-  height: number;
-  topline: number;
-  botline: number;
-  wordStart: number[];
-  wordEnd: number[];
-  chunkStart: number[];
-  chunkEnd: number[];
+  window: WindowState;
+  words: PositionArrays;
+  chunks: PositionArrays;
   matchPairs: string[];
 };
 
+export type Position = {
+  row: number; // zero-based
+  col: number; // zero-based
+}
+
+export type WindowState = {
+  width: number;
+  height: number;
+  topline: number; // zero-based
+  botline: number; // zero-based
+}
+
+// 0-indexed
+export type PositionArrays = {
+  starts: number[]; // zero-based
+  ends: number[]; // zero-based
+}
