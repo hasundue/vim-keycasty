@@ -57,7 +57,7 @@ export async function main(denops: Denops) {
         winnr = await keycasty.openPopupWindow(denops, bufnr);
       }
 
-      keycasty.updatePopupWindow(denops, winnr);
+      keycasty.updatePopupWindow(denops, winnr, text.length);
 
       state = newState;
     },

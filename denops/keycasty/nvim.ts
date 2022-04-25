@@ -25,14 +25,12 @@ export function openPopupWindow(denops: Denops, bufnr: number) {
   }) as Promise<number>;
 }
 
-export async function updatePopupWindow(denops: Denops, winnr: number) {
-  const bufnr = await func.nvim_win_get_buf(denops, winnr) as number;
-  const lines = await func.nvim_buf_get_lines(denops, bufnr, 0, -1, false) as string[];
+export function updatePopupWindow(denops: Denops, winnr: number, width: number) {
   return func.nvim_win_set_config(denops, winnr, {
     relative: "cursor",
     row: 1,
     col: 0,
-    width: lines[0].length,
+    width,
   });
 }
 

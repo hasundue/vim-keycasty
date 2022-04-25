@@ -28,7 +28,7 @@ export function openPopupWindow(denops: Denops, bufnr: number) {
   }) as Promise<number>;
 }
 
-export function updatePopupWindow(denops: Denops, winnr: number) {
+export function updatePopupWindow(denops: Denops, winnr: number, _width: number) {
   denops.call("popup_move", winnr, { "line": "cursor+1", "col": "cursor" });
   return denops.cmd("redraw");
 }
