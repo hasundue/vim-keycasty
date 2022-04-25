@@ -24,6 +24,7 @@ Plug 'hasundue/vim-keycasty'
 - h j k l
 - gj gk
 - H M L
+- w e b ge
 
 ### Editing
 Not supported yet.
