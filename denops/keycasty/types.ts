@@ -5,6 +5,7 @@ export type State = {
   words: PositionArrays;
   chunks: PositionArrays;
   matchPairs: string[];
+  savedCol: number;
 };
 
 export type Position = {

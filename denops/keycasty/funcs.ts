@@ -60,7 +60,7 @@ export async function getWindowState(denops: Denops): Promise<WindowState> {
   }
 }
 
-export async function getState(denops: Denops): Promise<State> {
+export async function getState(denops: Denops, previous?: State): Promise<State> {
   const position: vim.Position = await vim.getcurpos(denops);
   const [ row, col ] = [ position[1] - 1, position[2] - 1 ];
   const line = await vim.getline(denops, ".");
@@ -72,6 +72,7 @@ export async function getState(denops: Denops): Promise<State> {
     words: getWordPositions(line),
     chunks: getChunkPositions(line),
     matchPairs: await getMatchPairs(denops),
+    savedCol: !previous || col - previous.cursor.col ? col : previous.savedCol,
   };
 }
 
