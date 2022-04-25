@@ -9,14 +9,16 @@ export function getWordPosition(line: string): { wordStart: number[], wordEnd: n
   let index = 0;
 
   while (true) {
-    const start = line.slice(index).search(/(\b\w)/);
+    if (index === line.length) break;
 
-    if (start < 0) break;
+    const start = line.slice(index).search(/\b\w|((?<=[\w\s])[^\w\s\.,]|^[^\w\s\.,])./);
 
-    index += start;
-    wordStart.push(index);
+    if (start > -1) {
+      index += start;
+      wordStart.push(index);
+    }
 
-    index += line.slice(index).search(/\w\b/);
+    index += line.slice(index).search(/\w\b|[^\w\s][\w\s]|[^\w\s]$/);
     wordEnd.push(index);
 
     index += 1;
@@ -55,6 +57,8 @@ export async function getState(denops: Denops): Promise<State> {
   };
 }
 
+const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
+
 export function getKeysCursorMoved(current: State, previous: State): string {
   const candidates: string[] = [];
 
@@ -63,17 +67,14 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   const windowWidth = current.width;
   const windowHeight = current.height;
 
-  const moveAmountChar = (amount: number) => amount > 1 ? amount.toString() : "";
-
   // h j k l
   const simpleMoveKey = verticalMove
     ? ( verticalMove > 0 ? "j" : "k" )
     : ( horizontalMove > 0 ? "l" : "h" );
 
   const simpleMoveAmount = Math.abs(verticalMove) || Math.abs(horizontalMove);
-  const simpleMoveAmountChar = simpleMoveAmount > 1 ? simpleMoveAmount.toString() : "";
 
-  candidates.push(simpleMoveAmountChar + simpleMoveKey);
+  candidates.push(amountChar(simpleMoveAmount) + simpleMoveKey);
 
   // gj gk
   const visualVerticalMove = Math.floor(
@@ -83,7 +84,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   const visualVerticalMoveAmount = Math.abs(visualVerticalMove);
 
   if (visualVerticalMove) {
-    candidates.push(moveAmountChar(visualVerticalMoveAmount) + visualVerticalMoveKey);
+    candidates.push(amountChar(visualVerticalMoveAmount) + visualVerticalMoveKey);
   }
 
   // H M L
@@ -97,7 +98,27 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     candidates.push("L");
   }
 
-  // w e g ge
+  // w e b ge
+  if (!verticalMove) {
+    const matchedStart = current.wordStart.indexOf(current.col - 1);
+    const matchedEnd = current.wordEnd.indexOf(current.col - 1);
+    if (matchedStart > -1) {
+      const nextStart = previous.wordStart.findIndex(col => col > previous.col - 1);
+      const jumpKey = matchedStart >= nextStart ? "w" : "b";
+      const jumpAmount = matchedStart >= nextStart
+        ? matchedStart - nextStart + 1
+        : nextStart - matchedStart - 1;
+      candidates.push(amountChar(jumpAmount) + jumpKey);
+    }
+    if (matchedEnd > -1) {
+      const nextEnd = previous.wordEnd.findIndex(col => col > previous.col - 1);
+      const jumpKey = matchedEnd >= nextEnd ? "e" : "ge";
+      const jumpAmount = matchedEnd >= nextEnd
+        ? matchedEnd - nextEnd + 1
+        : nextEnd - matchedEnd - 1;
+      candidates.push(amountChar(jumpAmount) + jumpKey);
+    }
+  }
 
   return candidates.reduce((now, next) => next.length < now.length ? next : now);
 }
