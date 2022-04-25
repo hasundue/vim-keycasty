@@ -13,20 +13,19 @@ export async function createPopupBuffer(denops: Denops) {
   return bufnr;
 }
 
-export async function openPopupWindow(denops: Denops, bufnr: number) {
-  const winnr = await vim.bufwinnr(denops, bufnr);
+export function updatePopupBuffer(denops: Denops, bufnr: number, text: string) {
+  return vim.setbufline(denops, bufnr, 1, text);
+}
 
-  if (winnr < 0) {
-    return denops.call("popup_create", bufnr, {
-      "line": "cursor+1",
-      "col": "cursor" 
-    }) as Promise<number>;
-  }
-  else {
-    denops.call("popup_show", winnr);
-    updatePopupWindow(denops, winnr);
-    return winnr;
-  }
+export function clearPopupBuffer(denops: Denops, bufnr: number) {
+  return denops.cmd(`silent call setbufline(${bufnr}, 1, "")`);
+}
+
+export function openPopupWindow(denops: Denops, bufnr: number) {
+  return denops.call("popup_create", bufnr, {
+    "line": "cursor+1",
+    "col": "cursor" 
+  }) as Promise<number>;
 }
 
 export function updatePopupWindow(denops: Denops, winnr: number) {
@@ -34,21 +33,7 @@ export function updatePopupWindow(denops: Denops, winnr: number) {
   return denops.cmd("redraw");
 }
 
-export function updatePopupBuffer(denops: Denops, bufnr: number, text: string) {
-  return vim.setbufline(denops, bufnr, 1, text);
-}
-
 export function closePopupWindow(denops: Denops, winnr: number) {
-  denops.call("popup_hide", winnr);
-  return denops.cmd("redraw");
-}
-
-export function clearPopupBuffer(denops: Denops, bufnr: number) {
-  return denops.cmd(`silent call setbufline(${bufnr}, 1, "")`);
-}
-
-export function deletePopupWindow(denops: Denops, winnr: number) {
   denops.call("popup_close", winnr);
   return denops.cmd("redraw");
 }
-
