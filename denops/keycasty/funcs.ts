@@ -40,6 +40,11 @@ export function getChunkPositions(line: string): { starts: number[], ends: numbe
   return getObjectPositions(line, /(?<=\s|^)\S/, /\S(?=\s|$)/);
 }
 
+async function getMatchPairs(denops: Denops): Promise<string[]> {
+  const str = await denops.eval("&mps") as string;
+  return str.split(","); // something like ["(:)", "{:}", "[:]"]
+}
+
 export async function getState(denops: Denops): Promise<State> {
   const position: vim.Position = await vim.getcurpos(denops);
 
@@ -57,6 +62,7 @@ export async function getState(denops: Denops): Promise<State> {
 
   const wordPositions = getWordPositions(line);
   const chunkPositions = getChunkPositions(line);
+  const matchPairs = await getMatchPairs(denops);
 
   return {
     row: position[1],
@@ -70,6 +76,7 @@ export async function getState(denops: Denops): Promise<State> {
     wordEnd: wordPositions.ends,
     chunkStart: chunkPositions.starts,
     chunkEnd: chunkPositions.ends,
+    matchPairs,
   };
 }
 
@@ -115,36 +122,46 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // w W e E b B ge gE
-  const positionss = [ current.wordStart, current.wordEnd, current.chunkStart, current.chunkEnd ];
+  if (!verticalMove) {
+    const positionss = [ current.wordStart, current.wordEnd, current.chunkStart, current.chunkEnd ];
 
-  for (const positions of positionss) {
-    const match = positions.indexOf(current.col - 1);
+    for (const positions of positionss) {
+      const match = positions.indexOf(current.col - 1);
 
-    if (match > -1) {
-      const next = positions.findIndex(col => col > previous.col - 1);
+      if (match > -1) {
+        const next = positions.findIndex(col => col > previous.col - 1);
 
-      const jumpKey = ((positions: typeof positionss[number]) => { 
-        if (match >= next) { // move forward
-          switch (positions) {
-            case current.wordStart: return "w";
-            case current.chunkStart: return "W";
-            case current.wordEnd: return "e";
-            case current.chunkEnd: return "E";
+        const jumpKey = ((positions: typeof positionss[number]) => { 
+          if (match >= next) { // move forward
+            switch (positions) {
+              case current.wordStart: return "w";
+              case current.chunkStart: return "W";
+              case current.wordEnd: return "e";
+              case current.chunkEnd: return "E";
+            }
           }
-        }
-        else { // move backward
-          switch (positions) {
-            case current.wordStart: return "b";
-            case current.chunkStart: return "B";
-            case current.wordEnd: return "ge";
-            case current.chunkEnd: return "gE";
+          else { // move backward
+            switch (positions) {
+              case current.wordStart: return "b";
+              case current.chunkStart: return "B";
+              case current.wordEnd: return "ge";
+              case current.chunkEnd: return "gE";
+            }
           }
-        }
-      })(positions);
+        })(positions);
 
-      const jumpAmount = match >= next ? match - next + 1 : next - match - 1;
+        const jumpAmount = match >= next ? match - next + 1 : next - match - 1;
 
-      candidates.push(amountChar(jumpAmount) + jumpKey);
+        candidates.push(amountChar(jumpAmount) + jumpKey);
+      }
+    }
+  }
+
+  // %
+  const pairs = [ previous.char + ":" + current.char, current.char + ":" + previous.char ];
+  for (const pair of pairs) {
+    if (current.matchPairs.includes(pair)) {
+      candidates.push("%");
     }
   }
 

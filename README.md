@@ -28,8 +28,9 @@ Plug 'hasundue/vim-keycasty'
 - h j k l
 - gj gk
 - H M L
-- w e b ge
-- W E B gE
+- w e b ge (not crossing over a line)
+- W E B gE (not crossing over a line)
+- %
 
 ### Editing
 Not supported yet.

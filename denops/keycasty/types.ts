@@ -10,4 +10,6 @@ export type State = {
   wordEnd: number[];
   chunkStart: number[];
   chunkEnd: number[];
+  matchPairs: string[];
 };
+
