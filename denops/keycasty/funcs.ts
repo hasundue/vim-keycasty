@@ -2,7 +2,7 @@ import type { Denops } from "./deps.ts";
 import type { State, WindowState, PositionArrays } from "./types.ts";
 import { vim } from "./deps.ts";
 
-function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegExp): PositionArrays {
+function getPositionArrays(line: string, startPattern: RegExp, endPattern: RegExp): PositionArrays {
   const starts: number[] = [];
   const ends: number[] = [];
 
@@ -28,7 +28,7 @@ function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegE
 }
 
 export function getWordPositions(line: string): PositionArrays {
-  return getObjectPositions(
+  return getPositionArrays(
     line,
     /(?<=[\W\s]|^)\w|(?<=[\w\s]|^)[^\w\s\.,]/,
     /\w(?=[\W\s]|$)|[^\w\s](?=[\w\s]|$)/
@@ -36,7 +36,7 @@ export function getWordPositions(line: string): PositionArrays {
 }
 
 export function getChunkPositions(line: string): PositionArrays {
-  return getObjectPositions(line, /(?<=\s|^)\S/, /\S(?=\s|$)/);
+  return getPositionArrays(line, /(?<=\s|^)\S/, /\S(?=\s|$)/);
 }
 
 async function getMatchPairs(denops: Denops): Promise<string[]> {
