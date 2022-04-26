@@ -30,8 +30,8 @@ function getObjectPositions(line: string, startPattern: RegExp, endPattern: RegE
 export function getWordPositions(line: string): PositionArrays {
   return getObjectPositions(
     line,
-    /\b\w|((?<=[\w\s])[^\w\s\.,]|^[^\w\s\.,])./,
-    /\w\b|[^\w\s][\w\s]|[^\w\s]$/
+    /(?<=[\W\s]|^)\w|(?<=[\w\s]|^)[^\w\s\.,]/,
+    /\w(?=[\W\s]|$)|[^\w\s](?=[\w\s]|$)/
   );
 }
 
@@ -129,9 +129,11 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
       if (match > -1) {
         const next = positions.findIndex(col => col > previous.cursor.col);
+        const prev = positions.findLastIndex(col => col < previous.cursor.col);
+        const isForward = next > 0 && match >= next
 
         const jumpKey = ((positions: typeof positionss[number]) => { 
-          if (match >= next) { // move forward
+          if (isForward) { // move forward
             switch (positions) {
               case current.words.starts: return "w";
               case current.chunks.starts: return "W";
@@ -149,7 +151,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
           }
         })(positions);
 
-        const jumpAmount = match >= next ? match - next + 1 : next - match - 1;
+        const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
 
         candidates.push(amountChar(jumpAmount) + jumpKey);
       }
