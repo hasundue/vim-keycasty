@@ -30,7 +30,7 @@ function getPositionArrays(line: string, startPattern: RegExp, endPattern: RegEx
 export function getWordPositions(line: string): PositionArrays {
   return getPositionArrays(
     line,
-    /(?<=[\W\s]|^)\w|(?<=[\w\s]|^)[^\w\s\.,]/,
+    /(?<=[\W\s]|^)\w|(?<=[\w\s]|^)[^\w\s]/,
     /\w(?=[\W\s]|$)|[^\w\s](?=[\w\s]|$)/
   );
 }
