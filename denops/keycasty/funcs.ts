@@ -72,7 +72,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
     words: getWordPositions(line),
     chunks: getChunkPositions(line),
     matchPairs: await getMatchPairs(denops),
-    savedCol: !previous || col - previous.cursor.col ? col : previous.savedCol,
+    savedCol: previous?.savedCol ?? col,
   };
 }
 
@@ -92,15 +92,13 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
   const simpleMoveAmount = Math.abs(verticalMove) || Math.abs(horizontalMove);
 
-  if (
-    verticalMove && (
-      !horizontalMove ||
-      !current.chunks.ends.length ||
-      current.cursor.col === current.chunks.ends.reverse()[0] ||
-      current.cursor.col === current.savedCol
-    ) ||
-    horizontalMove && !verticalMove
-  ) {
+  if (verticalMove && (
+        !horizontalMove ||
+        !current.chunks.ends.length ||
+        current.cursor.col === current.chunks.ends.reverse()[0] ||
+        current.cursor.col === current.savedCol) ||
+      horizontalMove && !verticalMove
+     ) {
     candidates.push(amountChar(simpleMoveAmount) + simpleMoveKey);
   }
 
@@ -131,40 +129,39 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // w W e E b B ge gE
-  if (!verticalMove) {
-    const positionss = [ current.words.starts, current.words.ends, current.chunks.starts, current.chunks.ends ];
+  const positionss = [ current.words.starts, current.words.ends, current.chunks.starts, current.chunks.ends ];
 
-    for (const positions of positionss) {
-      const match = positions.indexOf(current.cursor.col);
+  for (const positions of positionss) {
+    const match = positions.indexOf(current.cursor.col);
 
-      if (match > -1) {
-        const next = positions.findIndex(col => col > previous.cursor.col);
-        const prev = positions.findLastIndex(col => col < previous.cursor.col);
-        const isForward = next > 0 && match >= next
+    if (match > -1) {
+      const next = positions.findIndex(col => col > previous.cursor.col);
+      const prev = positions.findLastIndex(col => col < previous.cursor.col);
 
-        const jumpKey = ((positions: typeof positionss[number]) => { 
-          if (isForward) { // move forward
-            switch (positions) {
-              case current.words.starts: return "w";
-              case current.chunks.starts: return "W";
-              case current.words.ends: return "e";
-              case current.chunks.ends: return "E";
-            }
+      const isForward = (verticalMove === 1 && match === 0) || next > 0 && match >= next;
+
+      const jumpKey = ((positions: typeof positionss[number]) => { 
+        if (isForward) { // move forward
+          switch (positions) {
+            case current.words.starts: return "w";
+            case current.chunks.starts: return "W";
+            case current.words.ends: return "e";
+            case current.chunks.ends: return "E";
           }
-          else { // move backward
-            switch (positions) {
-              case current.words.starts: return "b";
-              case current.chunks.starts: return "B";
-              case current.words.ends: return "ge";
-              case current.chunks.ends: return "gE";
-            }
+        }
+        else { // move backward
+          switch (positions) {
+            case current.words.starts: return "b";
+            case current.chunks.starts: return "B";
+            case current.words.ends: return "ge";
+            case current.chunks.ends: return "gE";
           }
-        })(positions);
+        }
+      })(positions);
 
-        const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
+      const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
 
-        candidates.push(amountChar(jumpAmount) + jumpKey);
-      }
+      candidates.push(amountChar(jumpAmount) + jumpKey);
     }
   }
 
@@ -176,6 +173,13 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     }
   }
 
-  return candidates.reduce((now, next) => next.length < now.length ? next : now);
+  const keys = candidates.reduce((now, next) => next.length < now.length ? next : now);
+
+  const pureVerticalKeys = ["j", "k", "H", "M", "L"];
+  if (!pureVerticalKeys.some(key => keys.includes(key))) {
+    current.savedCol = current.cursor.col;
+  }
+
+  return keys;
 }
 

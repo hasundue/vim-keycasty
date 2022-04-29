@@ -46,7 +46,7 @@ export async function main(denops: Denops) {
     },
 
     async handleCursorMoved() {
-      const newState = await getState(denops);
+      const newState = await getState(denops, state);
       const newKeys = getKeysCursorMoved(newState, state);
       keys = keys.concat(newKeys);
 
