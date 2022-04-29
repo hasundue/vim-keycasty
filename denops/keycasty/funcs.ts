@@ -89,12 +89,6 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
 
 const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
 
-const kinds = ["words", "chunks"] as const;
-type kinds = typeof kinds[number];
-
-const edges = ["starts", "ends"] as const;
-type edges = typeof edges[number];
-
 export function getKeysCursorMoved(current: State, previous: State): string {
   const candidates: string[] = [];
 
@@ -146,8 +140,8 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // w W e E b B ge gE
-  for (const kind of kinds) {
-    for (const edge of edges) {
+  for (const kind of ["words", "chunks"] as const) {
+    for (const edge of ["starts", "ends"] as const) {
       let match = current[kind][edge].indexOf(current.cursor.col);
 
       if (match > -1) {
