@@ -23,6 +23,11 @@ function getPositionArrays(line: string, startPattern: RegExp, endPattern: RegEx
 
     index += 1;
   }
+  
+  if (!line.length) {
+    starts.push(0);
+    ends.push(0);
+  }
 
   return { starts, ends };
 }
@@ -78,6 +83,12 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
 
 const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
 
+const kinds = ["words", "chunks"] as const;
+type kinds = typeof kinds[number];
+
+const edges = ["starts", "ends"] as const;
+type edges = typeof edges[number];
+
 export function getKeysCursorMoved(current: State, previous: State): string {
   const candidates: string[] = [];
 
@@ -129,39 +140,35 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // w W e E b B ge gE
-  const positionss = [ current.words.starts, current.words.ends, current.chunks.starts, current.chunks.ends ];
+  for (const kind of kinds) {
+    for (const edge of edges) {
+      let match = current[kind][edge].indexOf(current.cursor.col);
 
-  for (const positions of positionss) {
-    const match = positions.indexOf(current.cursor.col);
+      if (match > -1) {
+        let next = previous[kind][edge].findIndex(col => col > previous.cursor.col);
+        if (next < 0) next = previous[kind][edge].length;
 
-    if (match > -1) {
-      const next = positions.findIndex(col => col > previous.cursor.col);
-      const prev = positions.findLastIndex(col => col < previous.cursor.col);
+        let prev = previous[kind][edge].findLastIndex(col => col < previous.cursor.col);
+        if (prev < 0) prev = -1;
 
-      const isForward = (verticalMove === 1 && match === 0) || next > 0 && match >= next;
+        if (verticalMove > 0) match += current[kind][edge].length;
+        if (verticalMove < 0) match -= current[kind][edge].length;
 
-      const jumpKey = ((positions: typeof positionss[number]) => { 
-        if (isForward) { // move forward
+        const isForward = verticalMove >= 0 && match >= next;
+
+        const jumpKey = ((positions: number[]) => { 
           switch (positions) {
-            case current.words.starts: return "w";
-            case current.chunks.starts: return "W";
-            case current.words.ends: return "e";
-            case current.chunks.ends: return "E";
+            case current.words.starts: return isForward ? "w" : "b";
+            case current.chunks.starts: return isForward ? "W" : "B";
+            case current.words.ends: return isForward ? "e" : "ge";
+            case current.chunks.ends: return isForward ? "E" : "gE";
           }
-        }
-        else { // move backward
-          switch (positions) {
-            case current.words.starts: return "b";
-            case current.chunks.starts: return "B";
-            case current.words.ends: return "ge";
-            case current.chunks.ends: return "gE";
-          }
-        }
-      })(positions);
+        })(current[kind][edge]);
 
-      const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
+        const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
 
-      candidates.push(amountChar(jumpAmount) + jumpKey);
+        candidates.push(amountChar(jumpAmount) + jumpKey);
+      }
     }
   }
 
@@ -173,7 +180,9 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     }
   }
 
-  const keys = candidates.reduce((now, next) => next.length < now.length ? next : now);
+  const keys = candidates.length
+    ? candidates.reduce((now, next) => next.length < now.length ? next : now)
+    : "";
 
   const pureVerticalKeys = ["j", "k", "H", "M", "L"];
   if (!pureVerticalKeys.some(key => keys.includes(key))) {
