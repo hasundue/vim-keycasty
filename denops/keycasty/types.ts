@@ -6,6 +6,7 @@ export type State = {
   chunks: PositionArrays;
   matchPairs: string[];
   savedCol: number;
+  lastKeys: string;
 };
 
 export type Position = {

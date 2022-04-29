@@ -78,6 +78,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
     chunks: getChunkPositions(line),
     matchPairs: await getMatchPairs(denops),
     savedCol: previous?.savedCol ?? col,
+    lastKeys: previous?.lastKeys ?? "",
   };
 }
 
@@ -151,7 +152,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
         let prev = previous[kind][edge].findLastIndex(col => col < previous.cursor.col);
         if (prev < 0) prev = -1;
 
-        if (verticalMove > 0) match += current[kind][edge].length;
+        if (verticalMove > 0) match += previous[kind][edge].length;
         if (verticalMove < 0) match -= current[kind][edge].length;
 
         const isForward = verticalMove >= 0 && match >= next;
@@ -180,12 +181,19 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     }
   }
 
-  const keys = candidates.length
-    ? candidates.reduce((now, next) => next.length < now.length ? next : now)
-    : "";
+  console.log(candidates);
+  let keys = candidates.find(keys => keys === previous.lastKeys); 
+
+  if (!keys) {
+    keys = candidates.length
+      ? candidates.reduce((now, next) => next.length < now.length ? next : now)
+      : "";
+  }
+
+  current.lastKeys = keys;
 
   const pureVerticalKeys = ["j", "k", "H", "M", "L"];
-  if (!pureVerticalKeys.some(key => keys.includes(key))) {
+  if (!pureVerticalKeys.some(key => keys!.includes(key))) {
     current.savedCol = current.cursor.col;
   }
 
