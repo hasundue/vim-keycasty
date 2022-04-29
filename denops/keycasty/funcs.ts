@@ -187,10 +187,14 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // 0 ^ $ g_
-  if (current.cursor.col === 0) candidates.push("0");
-  if (current.cursor.col === current.chunks.starts[0]) candidates.push("^");
-  if (current.cursor.col === current.lastCol) candidates.push("$");
-  if (current.cursor.col === current.chunks.ends.reverse()[0]) candidates.push("g_");
+  if (!verticalMove) {
+    switch (current.cursor.col) {
+      case 0: candidates.push("0"); /* falls through */
+      case current.chunks.starts[0]: candidates.push("^"); /* falls through */
+      case current.lastCol: candidates.push("$"); /* falls through */
+      case current.chunks.ends.reverse()[0]: candidates.push("g_"); /* falls through */
+    }
+  }
 
   let keys = candidates.find(keys => keys === previous.lastKeys); 
 
