@@ -3,9 +3,9 @@ import { getWordPositions, getChunkPositions } from "./funcs.ts";
 
 const tests = [
   {
-    str: "This is a test.",
+    str: "This is a test. ",
     words: {
-      starts: [0, 5, 8, 10],
+      starts: [0, 5, 8, 10, 14],
       ends: [3, 6, 8, 13, 14],
     },
     chunks: {

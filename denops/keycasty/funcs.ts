@@ -18,8 +18,12 @@ function getPositionArrays(line: string, startPattern: RegExp, endPattern: RegEx
       starts.push(index);
     }
 
-    index += line.slice(index).search(endPattern);
-    ends.push(index);
+    const end = line.slice(index).search(endPattern);
+
+    if (end > -1) {
+      index += end;
+      ends.push(index);
+    }
 
     index += 1;
   }
@@ -73,6 +77,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
   return {
     cursor: { row, col },
     char: line[col],
+    lastCol: line.length - 1,
     window: await getWindowState(denops),
     words: getWordPositions(line),
     chunks: getChunkPositions(line),
@@ -181,7 +186,12 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     }
   }
 
-  console.log(candidates);
+  // 0 ^ $ g_
+  if (current.cursor.col === 0) candidates.push("0");
+  if (current.cursor.col === current.chunks.starts[0]) candidates.push("^");
+  if (current.cursor.col === current.lastCol) candidates.push("$");
+  if (current.cursor.col === current.chunks.ends.reverse()[0]) candidates.push("g_");
+
   let keys = candidates.find(keys => keys === previous.lastKeys); 
 
   if (!keys) {

@@ -1,6 +1,7 @@
 export type State = {
   cursor: Position;
   char: string;
+  lastCol: number;
   window: WindowState;
   words: PositionArrays;
   chunks: PositionArrays;
