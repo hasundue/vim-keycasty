@@ -73,16 +73,18 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
   const position: vim.Position = await vim.getcurpos(denops);
   const [ row, col ] = [ position[1] - 1, position[2] - 1 ];
   const line = await vim.getline(denops, ".");
+  const eof = await vim.getpos(denops, "$");
 
   return {
     cursor: { row, col },
+    line,
     char: line[col],
-    lastCol: line.length - 1,
     window: await getWindowState(denops),
     words: getWordPositions(line),
     chunks: getChunkPositions(line),
     matchPairs: await getMatchPairs(denops),
     savedCol: previous?.savedCol ?? col,
+    lastRow: eof[1] - 1,
     lastKeys: previous?.lastKeys ?? "",
   };
 }
@@ -185,8 +187,17 @@ export function getKeysCursorMoved(current: State, previous: State): string {
     switch (current.cursor.col) {
       case 0: candidates.push("0"); /* falls through */
       case current.chunks.starts[0]: candidates.push("^"); /* falls through */
-      case current.lastCol: candidates.push("$"); /* falls through */
+      case current.line.length - 1: candidates.push("$"); /* falls through */
       case current.chunks.ends.reverse()[0]: candidates.push("g_"); /* falls through */
+    }
+  }
+
+  // gg G
+  if (simpleVerticalMove) {
+    switch (current.cursor.row) {
+      case 0: candidates.push("gg"); /* falls through */
+      case current.lastRow: candidates.push("G"); /* falls through */
+      default: candidates.push((current.cursor.row + 1).toString + "G");
     }
   }
 

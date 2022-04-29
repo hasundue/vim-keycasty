@@ -1,12 +1,13 @@
 export type State = {
   cursor: Position;
+  line: string;
   char: string;
-  lastCol: number;
   window: WindowState;
   words: PositionArrays;
   chunks: PositionArrays;
   matchPairs: string[];
   savedCol: number;
+  lastRow: number;
   lastKeys: string;
 };
 
