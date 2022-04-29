@@ -92,7 +92,17 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
   const simpleMoveAmount = Math.abs(verticalMove) || Math.abs(horizontalMove);
 
-  candidates.push(amountChar(simpleMoveAmount) + simpleMoveKey);
+  if (
+    verticalMove && (
+      !horizontalMove ||
+      !current.chunks.ends.length ||
+      current.cursor.col === current.chunks.ends.reverse()[0] ||
+      current.cursor.col === current.savedCol
+    ) ||
+    horizontalMove && !verticalMove
+  ) {
+    candidates.push(amountChar(simpleMoveAmount) + simpleMoveKey);
+  }
 
   // gj gk
   const visualVerticalMove = Math.floor(
