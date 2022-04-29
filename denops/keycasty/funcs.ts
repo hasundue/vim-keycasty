@@ -85,6 +85,12 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   const horizontalMove = current.cursor.col - previous.cursor.col;
   const windowWidth = current.window.width;
 
+  const simpleVerticalMove = verticalMove && 
+    (!horizontalMove ||
+     current.cursor.col === current.savedCol ||
+     !current.chunks.ends.length ||
+     current.cursor.col < current.savedCol && current.cursor.col === current.chunks.ends.reverse()[0]);
+
   // h j k l
   const simpleMoveKey = verticalMove
     ? ( verticalMove > 0 ? "j" : "k" )
@@ -92,13 +98,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
   const simpleMoveAmount = Math.abs(verticalMove) || Math.abs(horizontalMove);
 
-  if (verticalMove && (
-        !horizontalMove ||
-        !current.chunks.ends.length ||
-        current.cursor.col === current.chunks.ends.reverse()[0] ||
-        current.cursor.col === current.savedCol) ||
-      horizontalMove && !verticalMove
-     ) {
+  if (simpleVerticalMove || horizontalMove && !verticalMove) {
     candidates.push(amountChar(simpleMoveAmount) + simpleMoveKey);
   }
 
@@ -114,7 +114,7 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   }
 
   // H M L
-  if (verticalMove) {
+  if (simpleVerticalMove) {
     const textHeight = current.window.bottom - current.window.top + 1;
 
     if (current.cursor.row === current.window.top) {
