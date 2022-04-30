@@ -117,7 +117,7 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     };
 
     for (const [ key, [ offset, backwards ] ] of Object.entries(moves)) {
-      if (forwards && backwards) continue;
+      if ( (forwards && backwards) || (!forwards && !backwards) ) continue;
 
       const char = current.line[current.cursor.col + offset];
       if (!char) continue;
@@ -126,13 +126,20 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
         ? current.line.slice(previous.cursor.col + 1, current.cursor.col)
         : current.line.slice(current.cursor.col + 1, previous.cursor.col);
 
-      const count = (partialLine.match(new RegExp(char, "g")) || []).length;
+      const escapedChar = char.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+      const count = (partialLine.match(new RegExp(escapedChar, "g")) || []).length;
+      const amount = amountChar(count+1);
 
-      if (previous.searchKeys.match(new RegExp("\d*?[fFtT]" + char))) {
-        candidates.push(amountChar(count+1) + (forwards ? ";" : ","));
+      const previousKeyMatch = previous.searchKeys.match(
+        new RegExp("(?<=\d*?)[fFtT]" + "(?=" + escapedChar + ")")
+      );
+
+      if (previousKeyMatch) {
+        const previousKey = previousKeyMatch[0];
+        candidates.push(amount + (moves[previousKey][1] === backwards ? ";" : ","));
       }
       else {
-        candidates.push(amountChar(count+1) + key + char);
+        candidates.push(amount + key + char);
       }
     }
 
