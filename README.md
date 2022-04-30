@@ -18,6 +18,14 @@ Plug 'vim-denops/denops.vim'
 Plug 'hasundue/vim-keycasty'
 ```
 
+## Configuration
+Keycasty refers updatetime for the time for which the pop-up automatically disappears if no input is received.
+Set it as an appropriate value.
+
+```viml
+set updatetime=1000
+```
+
 ## Commands
 - :KeycastyEnable
 - :KeycastyDisable
