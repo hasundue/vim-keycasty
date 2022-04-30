@@ -6,13 +6,19 @@
 <!-- panvimdoc-ignore-end -->
 
 ## Introduction
-vim-keycasty is an experimental keycast plugin for Vim/NeoVim.
+vim-keycasty is an experimental keycast plugin for Vim/Neovim.
 
-Still in the alpha stage of development. Use it just for fun. 
+Still work in progress. Use it just for testing or for fun. 
+
+## Design
+- vim-keycasty estimates key inputs from your operations (cursor movement, text modification, etc.)
+- vim-keycasty does not watch real key inputs (it is not possible on Neovim)
+- Keycast from the plugin does not necessarily match with real key inputs
+- Keycast is shown beside the cursor, so that one can follow both of the cursor movement and the keycast easily
 
 ## Dependency
-- Vim (8.2.3995+) or NeoVim (0.6.1+)
-- [Deno](https://deno.land) (1.21.0+)
+- Vim (v8.2.3995+) or Neovim (v0.6.1+)
+- [Deno](https://deno.land) (v1.21.0+)
 - [denops.vim](https://github.com/vim-denops/denops.vim) (v3.0.0+)
 
 ## Installation
