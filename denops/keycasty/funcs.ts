@@ -105,6 +105,46 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
      !current.chunks.ends.length ||
      current.cursor.col < current.savedCol && current.cursor.col === current.chunks.ends.reverse()[0]);
 
+  if (!verticalMove) {
+    // fx tx Fx Tx ; ,
+    const forwards = current.cursor.col > previous.cursor.col;
+
+    const moves: { [ key: string ]: [ number, boolean ] } = { 
+      "f": [ 0, false ],
+      "F": [ 0, true ],
+      "t": [ +1, false ],
+      "T": [ -1, true ],
+    };
+
+    for (const [ key, [ offset, backwards ] ] of Object.entries(moves)) {
+      if (forwards && backwards) continue;
+
+      const char = current.line[current.cursor.col + offset];
+      if (!char) continue;
+
+      const partialLine = forwards
+        ? current.line.slice(previous.cursor.col + 1, current.cursor.col)
+        : current.line.slice(current.cursor.col + 1, previous.cursor.col);
+
+      const count = (partialLine.match(new RegExp(char, "g")) || []).length;
+
+      if (previous.searchKeys.match(new RegExp("\d*?[fFtT]" + char))) {
+        candidates.push(amountChar(count+1) + (forwards ? ";" : ","));
+      }
+      else {
+        candidates.push(amountChar(count+1) + key + char);
+      }
+    }
+
+    // 0 ^ $ g_
+    switch (current.cursor.col) {
+      case 0: candidates.push("0"); /* falls through */
+      case current.chunks.starts[0]: candidates.push("^"); /* falls through */
+      case current.line.length - 1: candidates.push("$"); /* falls through */
+      case current.chunks.ends.reverse()[0]: candidates.push("g_"); /* falls through */
+    }
+  }
+
   // h j k l
   const simpleMoveKey = verticalMove
     ? ( verticalMove > 0 ? "j" : "k" )
@@ -127,8 +167,8 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     candidates.push(amountChar(visualVerticalMoveAmount) + visualVerticalMoveKey);
   }
 
-  // H M L
   if (simpleVerticalMove) {
+    // H M L
     const textHeight = current.window.bottom - current.window.top + 1;
 
     if (current.cursor.row === current.window.top) {
@@ -139,6 +179,18 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     }
     if (current.cursor.row === current.window.bottom) {
       candidates.push("L");
+    }
+
+    // gg G
+    switch (current.cursor.row) {
+      case 0: 
+        candidates.push("gg");
+        break;
+      case current.lastRow:
+        candidates.push("G");
+        break;
+      default: 
+        candidates.push((current.cursor.row + 1).toString() + "G");
     }
   }
 
@@ -191,62 +243,6 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
   for (const pair of pairs) {
     if (current.matchPairs.includes(pair)) {
       candidates.push("%");
-    }
-  }
-
-  // 0 ^ $ g_
-  if (!verticalMove) {
-    switch (current.cursor.col) {
-      case 0: candidates.push("0"); /* falls through */
-      case current.chunks.starts[0]: candidates.push("^"); /* falls through */
-      case current.line.length - 1: candidates.push("$"); /* falls through */
-      case current.chunks.ends.reverse()[0]: candidates.push("g_"); /* falls through */
-    }
-  }
-
-  // gg G
-  if (simpleVerticalMove) {
-    switch (current.cursor.row) {
-      case 0: 
-        candidates.push("gg");
-        break;
-      case current.lastRow:
-        candidates.push("G");
-        break;
-      default: 
-        candidates.push((current.cursor.row + 1).toString() + "G");
-    }
-  }
-
-  // fx tx Fx Tx ; ,
-  if (!verticalMove) {
-    const forwards = current.cursor.col > previous.cursor.col;
-
-    const moves: { [ key: string ]: [ number, boolean ] } = { 
-      "f": [ 0, false ],
-      "F": [ 0, true ],
-      "t": [ +1, false ],
-      "T": [ -1, true ],
-    };
-
-    for (const [ key, [ offset, backwards ] ] of Object.entries(moves)) {
-      if (forwards && backwards) continue;
-
-      const char = current.line[current.cursor.col + offset];
-      if (!char) continue;
-
-      const partialLine = forwards
-        ? current.line.slice(previous.cursor.col + 1, current.cursor.col)
-        : current.line.slice(current.cursor.col + 1, previous.cursor.col);
-
-      const count = (partialLine.match(new RegExp(char, "g")) || []).length;
-
-      if (previous.searchKeys.match(new RegExp("\d*?[fFtT]" + char))) {
-        candidates.push(amountChar(count+1) + (forwards ? ";" : ","));
-      }
-      else {
-        candidates.push(amountChar(count+1) + key + char);
-      }
     }
   }
 
