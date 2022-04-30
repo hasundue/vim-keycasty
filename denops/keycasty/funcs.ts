@@ -108,6 +108,10 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
      !current.chunks.ends.length ||
      current.cursor.col < current.savedCol && current.cursor.col === current.chunks.ends.reverse()[0]);
 
+  const start = Math.min(previous.cursor.row, current.cursor.row) + 1;
+  const end = Math.max(previous.cursor.row, current.cursor.row) - 1;
+  const jumpedLines = await vim.getbufline(denops, "", start+1, end+1);
+
   if (!verticalMove) {
     // fx tx Fx Tx ; ,
     const forwards = current.cursor.col > previous.cursor.col;
@@ -239,17 +243,13 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
 
         let jumpAmount = isForward ? match - next + 1 : prev - match + 1;
 
-        if (Math.abs(verticalMove) > 1) {
-          const min = Math.min(current.cursor.row, previous.cursor.row);
-          const max = Math.max(current.cursor.row, previous.cursor.row);
-          const getKindPositions = kind === "words" ? getWordPositions : getChunkPositions;
+        const getKindPositions = kind === "words" ? getWordPositions : getChunkPositions;
 
-          for (let lnum = min+1; lnum < max; lnum++) {
-            const line = await vim.getline(denops, lnum+1);
-            if (!line.length && (jumpKey! === "e" || jumpKey! === "E")) continue;
+        jumpedLines.forEach(line => {
+          if (!(line.length === 0 && (jumpKey! === "e" || jumpKey! === "E"))) {
             jumpAmount += getKindPositions(line)[edge].length;
           }
-        }
+        });
 
         candidates.push(amountChar(jumpAmount) + jumpKey);
       }
@@ -266,12 +266,7 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
 
   // } {
   if (!current.line.length && verticalMove) {
-    const start = Math.min(previous.cursor.row, current.cursor.row) + 1;
-    const end = Math.max(previous.cursor.row, current.cursor.row) - 1;
-
-    const lines = await vim.getbufline(denops, "", start+1, end+1);
-    const count = lines.filter(line => !line.length).length;
-
+    const count = jumpedLines.filter(line => !line.length).length;
     candidates.push(amountChar(count+1) + (verticalMove > 0 ? "}" : "{"));
   }
 
