@@ -72,12 +72,10 @@ export async function main(denops: Denops) {
 
     async clear() {
       if (winnr) {
-        keycasty.closePopupWindow(denops, winnr);
-        winnr = 0;
-
-        keys = [];
-
+        await keycasty.closePopupWindow(denops, winnr);
         await keycasty.clearPopupBuffer(denops, bufnr);
+        winnr = 0;
+        keys = [];
       }
     },
   };
