@@ -19,16 +19,18 @@ Plug 'hasundue/vim-keycasty'
 ```
 
 ## Configuration
-Keycasty refers updatetime for the time for which the pop-up automatically disappears if no input is received.
-Set it as an appropriate value.
+The plugin refers the updatetime value for the time for which the pop-up automatically disappears if no input is received.
 
 ```viml
 set updatetime=1000
 ```
 
 ## Commands
-- :KeycastyEnable
-- :KeycastyDisable
+#### :KeycastyEnable
+Enable keycasty in all buffers.
+
+#### :KeycastyDisable
+Disable keycasty in all buffers.
 
 ## Supported Vim Commands
 
