@@ -56,8 +56,10 @@ export async function main(denops: Denops) {
     async handleCursorMoved() {
       const newState = await getState(denops, state);
       const newKeys = await getKeysCursorMoved(denops, newState, state!);
-      keys = keys.concat(newKeys);
 
+      if (!newKeys) return;
+
+      keys = keys.concat(newKeys);
       const text = keys.join("");
       keycasty.updatePopupBuffer(denops, bufnr, text);
 
@@ -66,13 +68,12 @@ export async function main(denops: Denops) {
       }
 
       keycasty.updatePopupWindow(denops, winnr, text.length);
-
       state = newState;
     },
 
     async clear() {
       if (winnr) {
-        await keycasty.closePopupWindow(denops, winnr);
+        keycasty.closePopupWindow(denops, winnr);
         await keycasty.clearPopupBuffer(denops, bufnr);
         winnr = 0;
         keys = [];

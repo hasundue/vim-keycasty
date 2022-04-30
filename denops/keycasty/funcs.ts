@@ -97,6 +97,9 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
 
   const verticalMove = current.cursor.row - previous.cursor.row;
   const horizontalMove = current.cursor.col - previous.cursor.col;
+
+  if (!verticalMove && !horizontalMove) return "";
+
   const windowWidth = current.window.width;
 
   const simpleVerticalMove = verticalMove && 
@@ -175,6 +178,18 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
   }
 
   if (simpleVerticalMove) {
+    // gg G
+    switch (current.cursor.row) {
+      case 0: 
+        candidates.push("gg");
+        break;
+      case current.lastRow:
+        candidates.push("G");
+        break;
+      default: 
+        candidates.push((current.cursor.row + 1).toString() + "G");
+    }
+
     // H M L
     const textHeight = current.window.bottom - current.window.top + 1;
 
@@ -186,18 +201,6 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     }
     if (current.cursor.row === current.window.bottom) {
       candidates.push("L");
-    }
-
-    // gg G
-    switch (current.cursor.row) {
-      case 0: 
-        candidates.push("gg");
-        break;
-      case current.lastRow:
-        candidates.push("G");
-        break;
-      default: 
-        candidates.push((current.cursor.row + 1).toString() + "G");
     }
   }
 

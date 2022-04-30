@@ -34,6 +34,6 @@ export function updatePopupWindow(denops: Denops, winnr: number, _width: number)
 }
 
 export function closePopupWindow(denops: Denops, winnr: number) {
-  denops.call("popup_close", winnr);
+  denops.call("popup_hide", winnr);
   return denops.cmd("redraw");
 }
