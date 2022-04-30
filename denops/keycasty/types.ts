@@ -9,6 +9,7 @@ export type State = {
   savedCol: number;
   lastRow: number;
   lastKeys: string;
+  searchKeys: string;
 };
 
 export type Position = {

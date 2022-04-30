@@ -86,6 +86,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
     savedCol: previous?.savedCol ?? col,
     lastRow: eof[1] - 1,
     lastKeys: previous?.lastKeys ?? "",
+    searchKeys: previous?.searchKeys ?? "",
   };
 }
 
@@ -217,6 +218,38 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     }
   }
 
+  // fx tx Fx Tx ; ,
+  if (!verticalMove) {
+    const forwards = current.cursor.col > previous.cursor.col;
+
+    const moves: { [ key: string ]: [ number, boolean ] } = { 
+      "f": [ 0, false ],
+      "F": [ 0, true ],
+      "t": [ +1, false ],
+      "T": [ -1, true ],
+    };
+
+    for (const [ key, [ offset, backwards ] ] of Object.entries(moves)) {
+      if (forwards && backwards) continue;
+
+      const char = current.line[current.cursor.col + offset];
+      if (!char) continue;
+
+      const partialLine = forwards
+        ? current.line.slice(previous.cursor.col + 1, current.cursor.col)
+        : current.line.slice(current.cursor.col + 1, previous.cursor.col);
+
+      const count = (partialLine.match(new RegExp(char, "g")) || []).length;
+
+      if (previous.searchKeys.match(new RegExp("\d*?[fFtT]" + char))) {
+        candidates.push(amountChar(count+1) + (forwards ? ";" : ","));
+      }
+      else {
+        candidates.push(amountChar(count+1) + key + char);
+      }
+    }
+  }
+
   let keys = candidates.find(keys => keys === previous.lastKeys); 
 
   if (!keys) {
@@ -227,9 +260,13 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
 
   current.lastKeys = keys;
 
-  const pureVerticalKeys = ["j", "k", "H", "M", "L"];
-  if (!pureVerticalKeys.some(key => keys!.includes(key))) {
+  const simpleVerticalKeys = ["j", "k", "H", "M", "L"];
+  if (!simpleVerticalKeys.some(key => keys!.includes(key))) {
     current.savedCol = current.cursor.col;
+  }
+
+  if (keys!.match(/\d*?[fFtT]./)) {
+    current.searchKeys = keys;
   }
 
   return keys;
