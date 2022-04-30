@@ -8,7 +8,7 @@
 ## Introduction
 Keycasty is an experimental keycast plugin for Vim/Neovim.
 
-Still work in progress. Use it just for trying.
+Still work in progress. Use it just for testing.
 
 ## Design
 - Keycasty estimates key inputs from each event (cursor movement, text modification, etc.), rather than watching real key inputs, which is not possible on Neovim
