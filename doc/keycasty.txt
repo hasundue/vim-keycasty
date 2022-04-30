@@ -2,15 +2,15 @@
 
 INTRODUCTION                                           *keycasty-introduction*
 
-vim-keycasty is an experimental keycast plugin for Vim/Neovim.
+Keycasty is an experimental keycast plugin for Vim/Neovim.
 
-Still work in progress. Use it just for testing or for fun.
+Still work in progress. Use it just for trying.
 
 DESIGN                                                       *keycasty-design*
 
 
-- vim-keycasty estimates key inputs from each event (cursor movement, text modification, etc.), rather than watching real key inputs, which is not possible on Neovim
-- Keycast is shown beside the cursor, so that one can follow both of the cursor movement and the keycast easily
+- Keycasty estimates key inputs from each event (cursor movement, text modification, etc.), rather than watching real key inputs, which is not possible on Neovim
+- Keycasts are shown beside the cursor, so that one can follow both of cursor movement and keycasts easily
 
 
 LIMITATIONS                                             *keycasty-limitations*
@@ -46,11 +46,11 @@ Example: vim-plug <https://github.com/junegunn/vim-plug>
 
 CONFIGURATION                                         *keycasty-configuration*
 
-The plugin refers the updatetime value for the time for which the pop-up
+Keycasty refers the updatetime value for the time for which the pop-up
 automatically disappears if no input is received.
 
 Set it as an appropriate value like 1000 ms, but notice that this may affect
-behavior of functionalities the editor or other plugins.
+behavior of the editor or other plugins.
 
 Example:
 
