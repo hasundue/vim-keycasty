@@ -91,7 +91,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
 
 const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
 
-export function getKeysCursorMoved(current: State, previous: State): string {
+export async function getKeysCursorMoved(denops: Denops, current: State, previous: State) {
   const candidates: string[] = [];
 
   const verticalMove = current.cursor.row - previous.cursor.row;
@@ -158,16 +158,27 @@ export function getKeysCursorMoved(current: State, previous: State): string {
 
         const isForward = verticalMove >= 0 && match >= next;
 
-        const jumpKey = ((positions: number[]) => { 
-          switch (positions) {
+        const jumpKey = (() => { 
+          switch (current[kind][edge]) {
             case current.words.starts: return isForward ? "w" : "b";
             case current.chunks.starts: return isForward ? "W" : "B";
             case current.words.ends: return isForward ? "e" : "ge";
             case current.chunks.ends: return isForward ? "E" : "gE";
-          }
-        })(current[kind][edge]);
+          }})();
 
-        const jumpAmount = isForward ? match - next + 1 : prev - match + 1;
+        let jumpAmount = isForward ? match - next + 1 : prev - match + 1;
+
+        if (Math.abs(verticalMove) > 1) {
+          const min = Math.min(current.cursor.row, previous.cursor.row);
+          const max = Math.max(current.cursor.row, previous.cursor.row);
+          const getKindPositions = kind === "words" ? getWordPositions : getChunkPositions;
+
+          for (let lnum = min+1; lnum < max; lnum++) {
+            const line = await vim.getline(denops, lnum+1);
+            if (!line.length && (jumpKey! === "e" || jumpKey! === "E")) continue;
+            jumpAmount += getKindPositions(line)[edge].length;
+          }
+        }
 
         candidates.push(amountChar(jumpAmount) + jumpKey);
       }
@@ -195,9 +206,14 @@ export function getKeysCursorMoved(current: State, previous: State): string {
   // gg G
   if (simpleVerticalMove) {
     switch (current.cursor.row) {
-      case 0: candidates.push("gg"); /* falls through */
-      case current.lastRow: candidates.push("G"); /* falls through */
-      default: candidates.push((current.cursor.row + 1).toString + "G");
+      case 0: 
+        candidates.push("gg");
+        break;
+      case current.lastRow:
+        candidates.push("G");
+        break;
+      default: 
+        candidates.push((current.cursor.row + 1).toString() + "G");
     }
   }
 
