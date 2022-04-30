@@ -1,5 +1,6 @@
 <!-- panvimdoc-ignore-start -->
 # vim-keycasty
+![demo](https://user-images.githubusercontent.com/309723/166090921-bbf5794f-4984-42ad-b5ca-dd02d366ed14.gif)
 <!-- panvimdoc-ignore-end -->
 
 ## Introduction
