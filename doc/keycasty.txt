@@ -1,9 +1,8 @@
-*keycasty.txt* For Vim v8.2.3995+ or NeoVim v0.6.1+ Last change: 2022 April 30
+*keycasty.txt*                 For                  Last change: 2022 April 30
 
-==============================================================================
-1. vim-keycasty                                        *keycasty-vim-keycasty*
+INTRODUCTION                                           *keycasty-introduction*
 
-An experimental keycast plugin for Vim/NeoVim.
+vim-keycasty is an experimental keycast plugin for Vim/NeoVim.
 
 Still in the alpha stage of development. Use it just for fun.
 
