@@ -189,9 +189,19 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     candidates.push(amountChar(visualVerticalMoveAmount) + visualVerticalMoveKey);
   }
 
+  // gg G H M L
   if (simpleVerticalMove) {
-    // gg G
+    const textHeight = current.window.bottom - current.window.top + 1;
     switch (current.cursor.row) {
+      case previous.window.top:
+        candidates.push("H");
+        break;
+      case previous.window.bottom - Math.floor(textHeight/2):
+        candidates.push("M");
+        break;
+      case previous.window.bottom:
+        candidates.push("L");
+        break;
       case 0: 
         candidates.push("gg");
         break;
@@ -200,19 +210,6 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
         break;
       default: 
         candidates.push((current.cursor.row + 1).toString() + "G");
-    }
-
-    // H M L
-    const textHeight = current.window.bottom - current.window.top + 1;
-
-    if (current.cursor.row === current.window.top) {
-      candidates.push("H");
-    }
-    if (current.cursor.row === current.window.bottom - Math.floor(textHeight/2)) {
-      candidates.push("M");
-    }
-    if (current.cursor.row === current.window.bottom) {
-      candidates.push("L");
     }
   }
 
