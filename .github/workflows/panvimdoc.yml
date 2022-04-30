@@ -16,7 +16,7 @@ jobs:
           # description: ""
           # pandoc: "README.md"
           toc: false
-          version: "Vim v8.2.3995+ or NeoVim v0.6.1+"
+          version: ""
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'Auto generate docs'

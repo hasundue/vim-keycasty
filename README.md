@@ -1,5 +1,9 @@
+<!-- panvimdoc-ignore-start -->
 # vim-keycasty
-An experimental keycast plugin for Vim/NeoVim.
+<!-- panvimdoc-ignore-end -->
+
+## Introduction
+vim-keycasty is an experimental keycast plugin for Vim/NeoVim.
 
 Still in the alpha stage of development. Use it just for fun. 
 
