@@ -92,7 +92,7 @@ export async function getState(denops: Denops, previous?: State): Promise<State>
 
 const amountChar = (amount: number) => amount > 1 ? amount.toString() : "";
 
-export async function getKeysCursorMoved(denops: Denops, current: State, previous: State) {
+export async function getKeysCursorMoved(denops: Denops, current: State, previous: State): Promise<string> {
   const candidates: string[] = [];
 
   const verticalMove = current.cursor.row - previous.cursor.row;
@@ -253,6 +253,18 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
     }
   }
 
+  // } {
+  if (!current.line.length && verticalMove) {
+    const start = Math.min(previous.cursor.row, current.cursor.row) + 1;
+    const end = Math.max(previous.cursor.row, current.cursor.row) - 1;
+
+    const lines = await vim.getbufline(denops, "", start+1, end+1);
+    const count = lines.filter(line => !line.length).length;
+
+    candidates.push(amountChar(count+1) + (verticalMove > 0 ? "}" : "{"));
+  }
+
+  // check if repeated
   let keys = candidates.find(keys => keys === previous.lastKeys); 
 
   if (!keys) {
