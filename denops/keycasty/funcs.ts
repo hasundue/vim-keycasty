@@ -148,10 +148,18 @@ export async function getKeysCursorMoved(denops: Denops, current: State, previou
 
     // 0 ^ $ g_
     switch (current.cursor.col) {
-      case 0: candidates.push("0"); /* falls through */
-      case current.chunks.starts[0]: candidates.push("^"); /* falls through */
-      case current.line.length - 1: candidates.push("$"); /* falls through */
-      case current.chunks.ends.reverse()[0]: candidates.push("g_"); /* falls through */
+      case 0: 
+        candidates.push("0");
+        break;
+      case current.chunks.starts[0]:
+        candidates.push("^");
+        break;
+      case current.line.length - 1:
+        candidates.push("$");
+        break;
+      case current.chunks.ends.reverse()[0]:
+        candidates.push("g_");
+        break;
     }
   }
 
