@@ -1,10 +1,12 @@
-import { Denops, autocmd } from "./deps.ts";
+import type { Denops } from "./deps.ts";
+import type { State } from "./types.ts";
+import { autocmd } from "./deps.ts";
 import { getState, getKeysCursorMoved } from "./funcs.ts";
 
 export async function main(denops: Denops) {
   let bufnr = 0;
   let winnr = 0;
-  let state = await getState(denops);
+  let state: State | undefined;
   let keys: string[] = [];
 
   const keycasty = denops.meta.host === "nvim"
@@ -15,6 +17,9 @@ export async function main(denops: Denops) {
     async enable() {
       if (!bufnr) {
         bufnr = await keycasty.createPopupBuffer(denops);
+      }
+      if (!state) {
+        state = await getState(denops);
       }
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
@@ -40,6 +45,9 @@ export async function main(denops: Denops) {
         await keycasty.closePopupWindow(denops, winnr);
         winnr = 0;
       }
+      if (state) {
+        state = undefined;
+      }
       await autocmd.group(denops, "keycasty", (helper) => {
         helper.remove();
       });
@@ -47,7 +55,7 @@ export async function main(denops: Denops) {
 
     async handleCursorMoved() {
       const newState = await getState(denops, state);
-      const newKeys = await getKeysCursorMoved(denops, newState, state);
+      const newKeys = await getKeysCursorMoved(denops, newState, state!);
       keys = keys.concat(newKeys);
 
       const text = keys.join("");
