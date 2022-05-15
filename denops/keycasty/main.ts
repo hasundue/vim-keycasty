@@ -61,19 +61,19 @@ export async function main(denops: Denops) {
 
       keys = keys.concat(newKeys);
       const text = keys.join("");
-      keycasty.updatePopupBuffer(denops, bufnr, text);
+      await keycasty.updatePopupBuffer(denops, bufnr, text);
 
       if (!winnr) {
         winnr = await keycasty.openPopupWindow(denops, bufnr);
       }
 
-      keycasty.updatePopupWindow(denops, winnr, text.length);
+      await keycasty.updatePopupWindow(denops, winnr, text.length);
       state = newState;
     },
 
     async clear() {
       if (winnr) {
-        keycasty.closePopupWindow(denops, winnr);
+        await keycasty.closePopupWindow(denops, winnr);
         await keycasty.clearPopupBuffer(denops, bufnr);
         winnr = 0;
         keys = [];
