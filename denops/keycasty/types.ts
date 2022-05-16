@@ -18,6 +18,7 @@ export type Position = {
 }
 
 export type WindowState = {
+  textoff: number;
   width: number;
   height: number;
   top: number; // zero-based

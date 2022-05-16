@@ -1,22 +1,18 @@
 import type { Denops } from "./deps.ts";
 import type { State } from "./types.ts";
-import { autocmd } from "./deps.ts";
+import { autocmd, popup, vim, buffer } from "./deps.ts";
 import { getState, getKeysCursorMoved } from "./funcs.ts";
 
 export async function main(denops: Denops) {
   let bufnr = 0;
-  let winnr = 0;
+  let winid = 0;
   let state: State | undefined;
   let keys: string[] = [];
-
-  const keycasty = denops.meta.host === "nvim"
-    ? await import("./nvim.ts")
-    : await import("./vim.ts");
 
   denops.dispatcher = {
     async enable() {
       if (!bufnr) {
-        bufnr = await keycasty.createPopupBuffer(denops);
+        bufnr = await vim.bufadd(denops, "");
       }
       if (!state) {
         state = await getState(denops);
@@ -38,12 +34,12 @@ export async function main(denops: Denops) {
 
     async disable() {
       if (bufnr) {
-        await denops.cmd(`bw ${bufnr}`);
+        await denops.cmd(`bd ${bufnr}`);
         bufnr = 0;
       }
-      if (winnr) {
-        await keycasty.closePopupWindow(denops, winnr);
-        winnr = 0;
+      if (winid) {
+        await popup.close(denops, winid);
+        winid = 0;
       }
       if (state) {
         state = undefined;
@@ -61,21 +57,30 @@ export async function main(denops: Denops) {
 
       keys = keys.concat(newKeys);
       const text = keys.join("");
-      await keycasty.updatePopupBuffer(denops, bufnr, text);
+      await buffer.replace(denops, bufnr, [text]);
 
-      if (!winnr) {
-        winnr = await keycasty.openPopupWindow(denops, bufnr);
+      const style = {
+        row: newState.cursor.row + 2,
+        col: newState.window.textoff + newState.cursor.col + 1,
+        width: text.length,
+        height: 1,
+      };
+
+      if (!winid) {
+        winid = await popup.open(denops, bufnr, style);
+      }
+      else {
+        await popup.move(denops, winid, style);
       }
 
-      await keycasty.updatePopupWindow(denops, winnr, text.length);
       state = newState;
     },
 
     async clear() {
-      if (winnr) {
-        await keycasty.closePopupWindow(denops, winnr);
-        await keycasty.clearPopupBuffer(denops, bufnr);
-        winnr = 0;
+      if (winid) {
+        await popup.close(denops, winid);
+        await buffer.replace(denops, bufnr, []);
+        winid = 0;
         keys = [];
       }
     },

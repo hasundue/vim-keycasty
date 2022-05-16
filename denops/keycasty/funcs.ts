@@ -62,6 +62,7 @@ export async function getWindowState(denops: Denops): Promise<WindowState> {
   const botline = wininfo[0].botline as number;
 
   return {
+    textoff,
     width: width - textoff,
     height: await vim.winheight(denops, 0) as number,
     top: topline - 1,
