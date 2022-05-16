@@ -34,10 +34,11 @@ export async function main(denops: Denops) {
 
     async disable() {
       if (bufnr) {
-        await denops.cmd(`bd ${bufnr}`);
+        await denops.cmd(`bdelete ${bufnr}`);
         bufnr = 0;
       }
-      if (winid) {
+      const opened = await popup.isPopupWindow(denops, winid);
+      if (opened) {
         await popup.close(denops, winid);
         winid = 0;
       }
@@ -57,7 +58,6 @@ export async function main(denops: Denops) {
 
       keys = keys.concat(newKeys);
       const text = keys.join("");
-      await buffer.replace(denops, bufnr, [text]);
 
       const style = {
         row: newState.cursor.row + 2,
@@ -66,18 +66,24 @@ export async function main(denops: Denops) {
         height: 1,
       };
 
-      if (!winid) {
+      const opened = await popup.isPopupWindow(denops, winid);
+      if (!opened) {
         winid = await popup.open(denops, bufnr, style);
       }
       else {
         await popup.move(denops, winid, style);
       }
 
+      await buffer.replace(denops, bufnr, [text]);
+      
+      await denops.cmd("redraw");
+
       state = newState;
     },
 
     async clear() {
-      if (winid) {
+      const opened = await popup.isPopupWindow(denops, winid);
+      if (opened) {
         await popup.close(denops, winid);
         await buffer.replace(denops, bufnr, []);
         winid = 0;
