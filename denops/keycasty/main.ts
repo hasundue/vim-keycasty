@@ -41,6 +41,9 @@ export async function main(denops: Denops) {
         await popup.close(denops, winid);
         winid = 0;
       }
+      if (denops.meta.host === "vim") {
+        await denops.cmd("redraw");
+      }
       if (state) {
         state = undefined;
       }
@@ -84,6 +87,11 @@ export async function main(denops: Denops) {
     async close() {
       if (winid) {
         await popup.close(denops, winid);
+
+        if (denops.meta.host === "vim") {
+          await denops.cmd("redraw");
+        }
+
         winid = 0;
         keys = [];
       }
