@@ -27,7 +27,7 @@ export async function main(denops: Denops) {
         helper.define(
           [ "CursorHold", "InsertEnter" ],
           "*",
-          `call denops#notify("${denops.name}", "clear", [])`
+          `call denops#notify("${denops.name}", "close", [])`
         );
       });
     },
@@ -76,16 +76,17 @@ export async function main(denops: Denops) {
 
       await buffer.replace(denops, bufnr, [text]);
       
-      await denops.cmd("redraw");
+      if (denops.meta.host === "vim") {
+        await denops.cmd("redraw");
+      }
 
       state = newState;
     },
 
-    async clear() {
+    async close() {
       const opened = await popup.isPopupWindow(denops, winid);
       if (opened) {
         await popup.close(denops, winid);
-        await buffer.replace(denops, bufnr, []);
         winid = 0;
         keys = [];
       }
