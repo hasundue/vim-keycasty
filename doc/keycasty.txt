@@ -1,4 +1,4 @@
-*keycasty.txt*             For Vim/Neovim             Last change: 2022 May 16
+*keycasty.txt*             For Vim/Neovim             Last change: 2022 May 17
 
 INTRODUCTION                                           *keycasty-introduction*
 
