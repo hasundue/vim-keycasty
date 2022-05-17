@@ -37,8 +37,7 @@ export async function main(denops: Denops) {
         await denops.cmd(`bdelete ${bufnr}`);
         bufnr = 0;
       }
-      const opened = await popup.isPopupWindow(denops, winid);
-      if (opened) {
+      if (winid) {
         await popup.close(denops, winid);
         winid = 0;
       }
@@ -66,8 +65,7 @@ export async function main(denops: Denops) {
         height: 1,
       };
 
-      const opened = await popup.isPopupWindow(denops, winid);
-      if (!opened) {
+      if (!winid) {
         winid = await popup.open(denops, bufnr, style);
       }
       else {
@@ -84,8 +82,7 @@ export async function main(denops: Denops) {
     },
 
     async close() {
-      const opened = await popup.isPopupWindow(denops, winid);
-      if (opened) {
+      if (winid) {
         await popup.close(denops, winid);
         winid = 0;
         keys = [];

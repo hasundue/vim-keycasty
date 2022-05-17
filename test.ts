@@ -1,6 +1,6 @@
 import { test } from "./denocy.vim/mod.ts";
 
-test("test", { target: "all" }, (vim) => {
+test("test", { target: "all", delay: 50 }, (vim) => {
   vim.edit("./README.md");
   vim.cmd("KeycastyEnable");
   vim.moveTo("keycasty");
